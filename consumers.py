@@ -99,8 +99,6 @@ class GenericConsumer(object):
         # Register the callback the user wants
         self.consumer.register_callback(self.callback)
 
-        print "Listening for %s and registered %s" % (self.topic, self.callback)
-
         # This blocks, and then calls the user callback every time a message 
         # comes in
         self.consumer.wait()
