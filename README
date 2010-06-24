@@ -29,7 +29,7 @@ from mozillapulse import consumers
 def got_message(data, message):
     # Show we got something
     print "GOT MESSAGE: %s %s" % (data, message)
-    # Ack the message so it is removed form the queue
+    # Ack the message so it is removed from the broker's queue
     message.ack()
 
 # Make a consumer that listens to HG events (commit, closed, opened, etc)
