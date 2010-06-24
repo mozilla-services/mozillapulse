@@ -33,7 +33,7 @@ def got_message(data, message):
     message.ack()
 
 # Make a consumer that listens to HG events (commit, closed, opened, etc)
-# Note we don't give a user/paassword so it uses the default (public/public)
+# Note we don't give a user/password so it uses the default (public/public)
 # Also note the applabel should be unique as the message broker does
 # round-robin delivery when there are more than one connection to a queue
 # (which the applabel defines). you likely don't want that behavior
