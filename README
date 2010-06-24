@@ -1,0 +1,81 @@
+Overview
+--------------------------------------------
+
+Mozilla pulse is a prototype event manager / message broker. Documentation will maybe live at pulse.mozilla.org
+
+This library is a thin wrapper above others to make connecting to Mozilla Pulse
+easier. The mozillapulse library is very immature but still fairly useful.
+
+It may change completely in the future.
+
+Contact
+--------------------------------------------
+
+Questions / comments contact Christian Legnitto <clegnitto@mozilla.com>
+Note that I am a release manager not a python programmer, so patches welcome!
+
+Requirements
+--------------------------------------------
+
+* carrot (http://github.com/ask/carrot)
+
+Example consumer script:
+--------------------------------------------
+
+# Import our consumers from the lib
+from mozillapulse import consumers
+
+# Define a callback
+def got_message(data, message):
+    # Show we got something
+    print "GOT MESSAGE: %s %s" % (data, message)
+    # Ack the message so it is removed form the queue
+    message.ack()
+
+# Make a consumer that listens to HG events (commit, closed, opened, etc)
+# Note we don't give a user/paassword so it uses the default (public/public)
+# Also note the applabel should be unique as the message broker does
+# round-robin delivery when there are more than one connection to a queue
+# (which the applabel defines). you likely don't want that behavior
+pulse = consumers.HgConsumer(applabel='clegnitto@mozilla.com|mycoolapp')
+
+# Tell the broker what we want to listen for ('#' is everything) and give our
+# callback
+pulse.configure(topic='#', callback=got_event)
+
+# You can do this so that old/unprocessed messages in the queue are deleted
+# before you start processing
+# pulse.purge_existing_messages()
+
+# Block and call the callback function when a message comes in
+pulse.listen()
+
+
+Example producer script:
+--------------------------------------------
+
+# Import the pulse publishers
+from mozillapulse import publishers
+
+# import some pre-baked message types
+# Note messages can really be anything, these are just to make it clear
+# for producers
+from mozillapulse.messages import hg
+
+# Make a publisher (can't use public/public as it doesn't have access)
+pulse = publishers.HgPublisher(user="", password="")
+
+# Message to send
+mymessage = hg.HgCommitMessage('mozilla-1.9.2')
+
+# Fill some fake data, as the messages validate themselves and 
+# HgCommitMessage requires these fields to be there
+for x in ['who','when','changeset','message','link']:
+    mymessage.set_data(x, 'Fake %s data' % x)
+
+# Send the message to the broker through the proper exchange with the correct
+# routing key and payload
+pulse.publish(mymessage)
+
+# Disconnect to be nice to the server
+pulse.disconnect()
