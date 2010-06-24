@@ -36,8 +36,8 @@ def got_message(data, message):
 # Note we don't give a user/password so it uses the default (public/public)
 # Also note the applabel should be unique as the message broker does
 # round-robin delivery when there are more than one connection to a queue
-# (which the applabel defines). you likely don't want that behavior
-pulse = consumers.HgConsumer(applabel='clegnitto@mozilla.com|mycoolapp')
+# (which the applabel defines). You likely don't want that behavior
+pulse = consumers.HgConsumer(applabel='you@example.com|mycoolapp')
 
 # Tell the broker what we want to listen for ('#' is everything) and give our
 # callback
@@ -51,15 +51,15 @@ pulse.configure(topic='#', callback=got_event)
 pulse.listen()
 
 
-Example producer script:
+Example publisher script:
 --------------------------------------------
 
 # Import the pulse publishers
 from mozillapulse import publishers
 
-# import some pre-baked message types
+# Import some pre-baked message types
 # Note messages can really be anything, these are just to make it clear
-# for producers
+# for consumers
 from mozillapulse.messages import hg
 
 # Make a publisher (can't use public/public as it doesn't have access)
