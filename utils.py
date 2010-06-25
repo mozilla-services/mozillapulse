@@ -1,5 +1,6 @@
 import re
-from time import strftime
+from rfc3339 import rfc3339
+
 
 # Takes a string and attempts to extract bug ids in it
 # TODO: Make this better
@@ -19,5 +20,5 @@ def repo_parts(repo):
 # Takes a datetime object and returns a normalized UTC string
 # (so other/non-python clients can convert it to a native type)
 def time_to_string(mydatetime):
-    # RFC 2822 format
-    return strftime("%a, %d %b %Y %H:%M:%S %z", mydatetime.utctimetuple())
+    # RFC 3339 format
+    return rfc3339(mydatetime)
