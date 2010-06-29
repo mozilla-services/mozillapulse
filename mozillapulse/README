@@ -41,7 +41,7 @@ pulse = consumers.HgConsumer(applabel='you@example.com|mycoolapp')
 
 # Tell the broker what we want to listen for ('#' is everything) and give our
 # callback
-pulse.configure(topic='#', callback=got_event)
+pulse.configure(topic='#', callback=got_message)
 
 # You can do this so that old/unprocessed messages in the queue are deleted
 # before you start processing
