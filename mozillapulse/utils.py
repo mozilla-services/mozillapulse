@@ -11,8 +11,8 @@ def extract_bug_ids(msg):
     else:
         return None
 
-# Takes a repository name as a tring and breaks it into parts that can be the used
-# to construct data for a routing key
+# Takes a repository name as a string and breaks it into parts
+# that can be the used to construct data for a routing key
 # TODO: Make this better
 def repo_parts(repo):
     return repo.split('-')
