@@ -1,5 +1,5 @@
 from base import *
-from ..utils import extract_bug_ids, repo_parts
+from mozillapulse.utils import extract_bug_ids, repo_parts
 
 # ------------------------------------------------------------------------------
 # Generic base class for messages that have to do with HG
