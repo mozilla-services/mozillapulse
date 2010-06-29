@@ -43,7 +43,12 @@ def _timezone(utcoffset):
     # That's why we use abs(utcoffset).
     hours = abs(utcoffset) // 3600
     minutes = abs(utcoffset) % 3600 // 60
-    return '%c%02d:%02d' % ('-' if utcoffset < 0 else '+', hours, minutes)
+    if utcoffset < 0:
+        plusminus = '-'
+    else:
+        plusminus = '+'
+
+    return '%c%02d:%02d' % (plusminus, hours, minutes)
 
 def _timedelta_to_seconds(timedelta):
     '''
