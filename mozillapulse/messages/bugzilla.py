@@ -10,6 +10,15 @@ class GenericBugMessage(GenericMessage):
         super(GenericBugMessage, self).__init__()
         self.routing_parts.append('bug')
 
+    def _required_data_fields(self):
+        tmp = super(GenericBugMessage, self)._required_data_fields()
+        tmp.append('who')
+        tmp.append('when')
+        return tmp
+
+    def set_bugdata(self, bugdata):
+        self.set_data('bug', bugdata)
+
 # ------------------------------------------------------------------------------
 # High-level bug state messages (for end-user convenience)
 # ------------------------------------------------------------------------------
@@ -19,9 +28,6 @@ class BugStateMessage(GenericBugMessage):
     def __init__(self, what):
         super(BugStateMessage, self).__init__()
         self.routing_parts.append(what)
-
-    def set_bugdata(self, bugdata):
-        self.set_data('bug', bugdata)
 
 class BugCreatedMessage(BugStateMessage):
 
@@ -59,6 +65,32 @@ class BugDupedMessage(BugStateMessage):
 # ------------------------------------------------------------------------------
 # Messages about changing bug values
 # ------------------------------------------------------------------------------
+
+class BugAddedMessage(GenericBugMessage):
+
+    def __init__(self, what):
+        super(BugAddedMessage, self).__init__()
+        self.routing_parts.append('added')
+        self.routing_parts.append(what)
+
+    def _required_data_fields(self):
+        tmp = super(BugAddedMessage, self)._required_data_fields()
+        tmp.append('bug')
+        tmp.append('value')
+        return tmp
+
+class BugRemovedMessage(GenericBugMessage):
+
+    def __init__(self, what):
+        super(BugRemovedMessage, self).__init__()
+        self.routing_parts.append('removed')
+        self.routing_parts.append(what)
+
+    def _required_data_fields(self):
+        tmp = super(BugRemovedMessage, self)._required_data_fields()
+        tmp.append('bug')
+        tmp.append('value')
+        return tmp
 
 class BugChangedMessage(GenericBugMessage):
     
