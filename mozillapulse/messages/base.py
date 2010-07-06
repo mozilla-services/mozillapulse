@@ -8,10 +8,10 @@ class MalformedMessage(Exception):
 # Base class that other objects should inherit from
 class GenericMessage(object):
     
-    def __init__(self, routing_key=None, data={}):
+    def __init__(self, routing_key=None):
         self.routing_parts = []
         self.routing_key = routing_key
-        self.data = data
+        self.data = {}
         self.metadata = {}
 
     # Setter for data items

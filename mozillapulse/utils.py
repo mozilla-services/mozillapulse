@@ -15,7 +15,7 @@ def extract_bug_ids(msg):
 # that can be the used to construct data for a routing key
 # TODO: Make this better
 def repo_parts(repo):
-    return repo.split('-')
+    return re.split(r'[/-]+', repo)
 
 # Takes a datetime object and returns a normalized UTC string
 # (so other/non-python clients can convert it to a native type)

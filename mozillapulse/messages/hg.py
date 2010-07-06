@@ -10,6 +10,23 @@ class GenericHgMessage(GenericMessage):
         super(GenericHgMessage, self).__init__()
         self.routing_parts.append('hg')
 
+    def _required_data_fields(self):
+        tmp = super(GenericHgMessage, self)._required_data_fields()
+        tmp.append('repository')
+        return tmp
+
+    # Generate part of the routing key from the repository
+    def _prepare_routing_key(self):
+
+        # Parse the repo to make our routing key more specific
+        parts = repo_parts(self.data['repository'])
+        for part in parts:
+            self.routing_parts.append(part)
+
+        # Do the standard stuff
+        super(GenericHgMessage, self)._prepare_routing_key()
+
+
 # ------------------------------------------------------------------------------
 # Messages that have to do with HG's open and close status
 # ------------------------------------------------------------------------------
@@ -25,7 +42,7 @@ class HgRepoClosedMessage(HgRepoStatusMessage):
     def __init__(self, repo):
         super(HgRepoClosedMessage, self).__init__()
         self.routing_parts.append('closed')
-        self.routing_parts.append(repo)
+        self.data['repository'] = repo
 
 # FIXME: This doesn't really follow general -> specific pattern
 class HgRepoOpenedMessage(HgRepoStatusMessage):
@@ -33,52 +50,43 @@ class HgRepoOpenedMessage(HgRepoStatusMessage):
     def __init__(self, repo):
         super(HgRepoOpenedMessage, self).__init__()
         self.routing_parts.append('opened')
-        self.routing_parts.append(repo)
+        self.data['repository'] = repo
 
 # ------------------------------------------------------------------------------
-# Messages that have to do with commits
+# Messages that have to do with commits and pushes
 # ------------------------------------------------------------------------------
-class GenericCommitMessage(GenericHgMessage):
-
-    def __init__(self):
-        super(GenericCommitMessage, self).__init__()
-        self.routing_parts.append('commit')
-
-    def _required_data_fields(self):
-        tmp = super(GenericCommitMessage, self)._required_data_fields()
-        tmp.append('when')
-        tmp.append('changeset')
-        tmp.append('who')
-        tmp.append('message')
-        tmp.append('link')
-        return tmp
-
-    def _prepare(self):
-        super(GenericCommitMessage, self)._prepare()
-
-        # Parse the message for bug ids
-        bugs = extract_bug_ids(self.data['message'])
-        if bugs:
-            self.set_data('bug_ids', bugs)
-
-# FIXME: This doesn't really follow general -> specific pattern
-class HgCommitMessage(GenericCommitMessage):
+class HgCommitMessage(GenericHgMessage):
 
     def __init__(self, repo):
         super(HgCommitMessage, self).__init__()
+        self.routing_parts.append('commit')
         self.set_data('repository', repo)
 
     def _required_data_fields(self):
         tmp = super(HgCommitMessage, self)._required_data_fields()
-        tmp.append('repository')
+        tmp.append('id')
+        tmp.append('when')
+        tmp.append('who')
         return tmp
 
-    # Gnerate part of the routing key from the repository
-    def _prepare_routing_key(self):
-        # Parse the repo to make our routing key more specific
-        parts = repo_parts(self.data['repository'])
-        for part in parts:
-            self.routing_parts.append(part)
+    #def _prepare(self):
+    #    super(HgCommitMessage, self)._prepare()
+        # Parse the message for bug ids
+        #bugs = extract_bug_ids(self.data['message'])
+        #if bugs:
+        #    self.set_data('bug_ids', bugs)
 
-        # Do the standard stuff
-        super(HgCommitMessage, self)._prepare_routing_key()
+class HgPushMessage(GenericHgMessage):
+
+    def __init__(self, repo):
+        super(HgPushMessage, self).__init__()
+        self.routing_parts.append('push')
+        self.set_data('repository', repo)
+
+    def _required_data_fields(self):
+        tmp = super(HgPushMessage, self)._required_data_fields()
+        tmp.append('when')
+        tmp.append('who')
+        tmp.append('changesets')
+        return tmp
+
