@@ -7,7 +7,7 @@ class PulseConfiguration:
             # Connection defaults
             'user':       'public',
             'password':   'public',
-            'host':       'dm-pulse01.mozilla.org',
+            'host':       'pulse.mozilla.org',
             'port':       5672,
             'vhost':      '/',
             # Message defaults
