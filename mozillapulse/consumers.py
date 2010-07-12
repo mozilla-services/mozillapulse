@@ -129,3 +129,13 @@ class HgConsumer(GenericConsumer):
                 del kwargs[x]
 
         super(HgConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.hg')
+
+class BuildConsumer(GenericConsumer):
+    
+    def __init__(self, **kwargs):
+        for x in ['applabel','topic','callback']:
+            if x in kwargs:
+                setattr(self, x, kwargs[x])
+                del kwargs[x]
+
+        super(BuildConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.build')
