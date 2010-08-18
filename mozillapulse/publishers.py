@@ -37,6 +37,7 @@ class GenericPublisher(object):
     def disconnect(self):
         if self.connection:
             self.connection.close()
+            self.connection = None
 
     # Used to publish a pulse message to the proper exchange
     def publish(self, message):
@@ -66,13 +67,14 @@ class GenericPublisher(object):
         # some metadata
         final_data = {}
         final_data['payload'] = message.data
-        final_data['_meta'] = {
+        final_data['_meta'] = message.metadata.copy()
+        final_data['_meta'].update({
             'exchange': self.exchange,
             'routing_key': message.routing_key,
             'serializer': self.config.serializer,
             'sent': time_to_string(datetime.utcnow())
 
-        }
+        })
 
         # Send the message
         self.publisher.send(final_data, serializer=self.config.serializer)
@@ -93,3 +95,8 @@ class HgPublisher(GenericPublisher):
     
     def __init__(self, **kwargs):
         super(HgPublisher, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.hg')
+
+class BuildPublisher(GenericPublisher):
+
+    def __init__(self, **kwargs):
+        super(BuildPublisher, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.build')
