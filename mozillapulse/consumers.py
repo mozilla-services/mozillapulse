@@ -110,6 +110,26 @@ class GenericConsumer(object):
 # Consumers for various topics
 # ------------------------------------------------------------------------------
 
+class PulseTestConsumer(GenericConsumer):
+    
+    def __init__(self, **kwargs):
+        for x in ['applabel','topic','callback']:
+            if x in kwargs:
+                setattr(self, x, kwargs[x])
+                del kwargs[x]
+
+        super(PulseTestConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.pulse.test')
+
+class PulseMetaConsumer(GenericConsumer):
+    
+    def __init__(self, **kwargs):
+        for x in ['applabel','topic','callback']:
+            if x in kwargs:
+                setattr(self, x, kwargs[x])
+                del kwargs[x]
+
+        super(PulseMetaConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.pulse')
+
 class BugzillaConsumer(GenericConsumer):
     
     def __init__(self, **kwargs):

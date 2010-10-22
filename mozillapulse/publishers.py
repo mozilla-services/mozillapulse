@@ -86,6 +86,16 @@ class GenericPublisher(object):
 # Publishers for various exchanges
 # ------------------------------------------------------------------------------
 
+class PulseTestPublisher(GenericPublisher):
+    
+    def __init__(self, **kwargs):
+        super(PulseTestPublisher, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.pulse.test')
+
+class PulseMetaPublisher(GenericPublisher):
+    
+    def __init__(self, **kwargs):
+        super(PulseMetaPublisher, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.pulse')
+
 class BugzillaPublisher(GenericPublisher):
     
     def __init__(self, **kwargs):

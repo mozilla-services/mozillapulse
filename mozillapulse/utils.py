@@ -22,3 +22,9 @@ def repo_parts(repo):
 def time_to_string(mydatetime):
     # RFC 3339 format
     return rfc3339(mydatetime)
+
+# Stub for future work
+def email_to_routing_key(email):
+    # Should we do any processing here?
+    # Should we strip out periods?
+    return email

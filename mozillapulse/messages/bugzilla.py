@@ -1,4 +1,5 @@
 from base import *
+from mozillapulse.utils import email_to_routing_key
 
 # ------------------------------------------------------------------------------
 # Generic base class for messages that have to do with bugs
@@ -114,3 +115,35 @@ class BugChangedMessage(GenericBugMessage):
 
         if self.data['before'] == self.data['after']:
             raise MalformedMessage('before and after fields cannot be the same')
+
+# ------------------------------------------------------------------------------
+# Messages about requests
+# ------------------------------------------------------------------------------
+
+class BugRequestMessage(BugChangedMessage):
+
+    def __init__(self, what, type, who=None):
+        super(BugRequestMessage, self).__init__(what)
+        self.routing_parts.append(type)
+        if who:
+            self.routing_parts.append(email_to_routing_key(who))
+
+class BugRequestAddedMessage(BugRequestMessage):
+
+    def __init__(self, what, who=None):
+        super(BugRequestAddedMessage, self).__init__(what, 'requested', who)
+
+class BugRequestGrantedMessage(BugRequestMessage):
+
+    def __init__(self, what, who=None):
+        super(BugRequestGrantedMessage, self).__init__(what, 'granted', who)
+
+class BugRequestDeniedMessage(BugRequestMessage):
+
+    def __init__(self, what, who=None):
+        super(BugRequestDeniedMessage, self).__init__(what, 'denied', who)
+
+class BugRequestCanceledMessage(BugRequestMessage):
+
+    def __init__(self, what, who=None):
+        super(BugRequestCanceledMessage, self).__init__(what, 'canceled', who)
