@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='MozillaPulse',
-      version='.1',
+      version='.2',
       description='Library for interacting with the Mozilla Pulse message broker',
       author='Christian Legnitto',
       author_email='clegnitto@mozilla.com',
