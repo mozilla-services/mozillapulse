@@ -6,6 +6,8 @@ from utils import *
 
 from datetime import datetime
 
+import warnings
+
 # Exceptions we can raise
 class InvalidTopic(Exception):
     pass
@@ -153,10 +155,16 @@ class BugzillaConsumer(GenericConsumer):
     def __init__(self, **kwargs):
         super(BugzillaConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.bugzilla', **kwargs)
 
-class HgConsumer(GenericConsumer):
+class CodeConsumer(GenericConsumer):
     
     def __init__(self, **kwargs):
-        super(HgConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.hg', **kwargs)
+        super(CodeConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.code', **kwargs)
+
+class HgConsumer(CodeConsumer):
+
+    def __init__(self, **kwargs):
+        super(HgConsumer, self).__init__(PulseConfiguration(**kwargs), **kwargs)
+        warnings.warn('HgConsumer is now CodeConsumer', DeprecationWarning)
 
 class BuildConsumer(GenericConsumer):
     

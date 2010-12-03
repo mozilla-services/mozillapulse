@@ -6,6 +6,8 @@ from utils import *
 
 from datetime import datetime
 
+import warnings
+
 # Exceptions we can raise
 class InvalidExchange(Exception):
     pass
@@ -101,10 +103,16 @@ class BugzillaPublisher(GenericPublisher):
     def __init__(self, **kwargs):
         super(BugzillaPublisher, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.bugzilla')
 
-class HgPublisher(GenericPublisher):
+class CodePublisher(GenericPublisher):
     
     def __init__(self, **kwargs):
-        super(HgPublisher, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.hg')
+        super(CodePublisher, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.code')
+
+class HgPublisher(CodePublisher):
+    
+    def __init__(self, **kwargs):
+        super(HgPublisher, self).__init__(PulseConfiguration(**kwargs))
+        warnings.warn('HgPublisher is now CodePublisher', DeprecationWarning)
 
 class BuildPublisher(GenericPublisher):
 
