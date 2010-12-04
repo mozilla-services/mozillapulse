@@ -161,10 +161,7 @@ class CodeConsumer(GenericConsumer):
         super(CodeConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.code', **kwargs)
 
 class HgConsumer(CodeConsumer):
-
-    def __init__(self, **kwargs):
-        super(HgConsumer, self).__init__(PulseConfiguration(**kwargs), **kwargs)
-        warnings.warn('HgConsumer is now CodeConsumer', DeprecationWarning)
+    pass
 
 class BuildConsumer(GenericConsumer):
     
