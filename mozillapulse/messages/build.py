@@ -9,6 +9,7 @@ class BuildMessage(GenericMessage):
         super(BuildMessage, self).__init__()
         self.routing_parts.append(event['event'])
         self.metadata['master_name'] = event['master_name']
+        self.metadata['master_incarnation'] = event['master_incarnation']
         self.metadata['message_id'] = event['id']
 
         for key, value in event['payload'].items():
