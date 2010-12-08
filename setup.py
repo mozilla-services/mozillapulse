@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
+
+from setuptools import setup
 
 setup(name='MozillaPulse',
       version='.3',
@@ -9,5 +10,5 @@ setup(name='MozillaPulse',
       author='Christian Legnitto',
       author_email='clegnitto@mozilla.com',
       packages=['mozillapulse','mozillapulse.messages'],
+      install_requires=['carrot'],
 )
-
