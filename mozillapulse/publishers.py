@@ -75,7 +75,7 @@ class GenericPublisher(object):
             'exchange': self.exchange,
             'routing_key': message.routing_key,
             'serializer': self.config.serializer,
-            'sent': time_to_string(datetime.now(timezone('US/Pacific')))
+            'sent': time_to_string(datetime.now(timezone(self.config.broker_timezone)))
         })
 
         # Send the message

@@ -12,7 +12,6 @@ class PulseConfiguration:
             'vhost':      '/',
             # Message defaults
             'serializer': 'json',
-            # TODO: Remove this as it isn't currently used
             'broker_timezone': 'US/Pacific',
         }
 
