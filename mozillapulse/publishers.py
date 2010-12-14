@@ -5,6 +5,7 @@ from config import PulseConfiguration
 from utils import *
 
 from datetime import datetime
+from pytz import timezone
 
 import warnings
 
@@ -74,8 +75,7 @@ class GenericPublisher(object):
             'exchange': self.exchange,
             'routing_key': message.routing_key,
             'serializer': self.config.serializer,
-            'sent': time_to_string(datetime.utcnow())
-
+            'sent': time_to_string(datetime.now(timezone('US/Pacific')))
         })
 
         # Send the message

@@ -10,5 +10,5 @@ setup(name='MozillaPulse',
       author='Christian Legnitto',
       author_email='clegnitto@mozilla.com',
       packages=['mozillapulse','mozillapulse.messages'],
-      install_requires=['carrot'],
+      install_requires=['carrot', 'pytz'],
 )
