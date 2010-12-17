@@ -26,14 +26,16 @@ class MalformedMessage(Exception):
 class GenericConsumer(object):
 
     def __init__(self, config, exchange=None, connect=True, **kwargs):
-        self.config = config
-        self.exchange = exchange
+        self.config     = config
+        self.exchange   = exchange
         self.connection = None
-        self.durable = False
+        self.durable    = False
+        self.applabel   = ''
         for x in ['applabel','topic','callback','durable']:
             if x in kwargs:
                 setattr(self, x, kwargs[x])
                 del kwargs[x]
+
         if connect:
             self.connect()
 
