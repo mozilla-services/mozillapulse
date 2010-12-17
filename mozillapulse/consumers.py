@@ -61,8 +61,8 @@ class GenericConsumer(object):
     def purge_existing_messages(self):
 
         # Make sure there is an applabel given
-        if not self.applabel:
-            raise InvalidAppLabel(self.applabel)
+        if self.durable and not self.applabel:
+            raise InvalidAppLabel('Durable consumers must have an applabel')
         
         # Purge the queue of existing messages
         self.connection.create_backend().queue_purge(self.applabel)
@@ -85,8 +85,8 @@ class GenericConsumer(object):
             raise InvalidTopic(self.topic)
 
         # Make sure there is an applabel given
-        if not self.applabel:
-            raise InvalidAppLabel(self.applabel)
+        if self.durable and not self.applabel:
+            raise InvalidAppLabel('Durable consumers must have an applabel')
 
         # Make sure there is a callback given
         if not self.callback or not hasattr(self.callback, '__call__'):
