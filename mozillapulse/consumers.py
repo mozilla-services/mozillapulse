@@ -165,9 +165,15 @@ class CodeConsumer(GenericConsumer):
 class HgConsumer(CodeConsumer):
     
     def __init__(self, **kwargs):
-        super(CodeConsumer, self).__init__(PulseConfiguration(**kwargs), 'hg.push.mozilla.central', **kwargs)
+        pass
+        #super(CodeConsumer, self).__init__(PulseConfiguration(**kwargs), 'hg.push.mozilla.central', **kwargs)
 
 class BuildConsumer(GenericConsumer):
     
     def __init__(self, **kwargs):
         super(BuildConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.build', **kwargs)
+
+class QAConsumer(GenericConsumer):
+    
+    def __init__(self, **kwargs):
+        super(QAConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.qa', **kwargs)

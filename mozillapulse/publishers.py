@@ -118,3 +118,8 @@ class BuildPublisher(GenericPublisher):
 
     def __init__(self, **kwargs):
         super(BuildPublisher, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.build')
+
+class QAPublisher(GenericPublisher):
+
+    def __init__(self, **kwargs):
+        super(QAPublisher, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.qa')
