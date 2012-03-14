@@ -176,7 +176,7 @@ class BuildConsumer(GenericConsumer):
 class NormalizedBuildConsumer(GenericConsumer):
 
     def __init__(self, **kwargs):
-        super(BuildConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.build.normalized', **kwargs)
+        super(NormalizedBuildConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.build.normalized', **kwargs)
 
 class QAConsumer(GenericConsumer):
     
