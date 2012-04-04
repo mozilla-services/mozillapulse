@@ -4,7 +4,7 @@
 from setuptools import setup
 
 setup(name='MozillaPulse',
-      version='0.6',
+      version='0.61',
       description='Helper library for interacting with the Mozilla Pulse ' +
                   'message system at pulse.mozilla.org',
       author='Christian Legnitto',
