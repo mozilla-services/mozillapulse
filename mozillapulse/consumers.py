@@ -25,12 +25,14 @@ class MalformedMessage(Exception):
 # Generic publisher class that specific consumers inherit from
 class GenericConsumer(object):
 
-    def __init__(self, config, exchange=None, connect=True, **kwargs):
+    def __init__(self, config, exchange=None, connect=True, heartbeat=False,
+                 **kwargs):
         self.config     = config
         self.exchange   = exchange
         self.connection = None
         self.durable    = False
         self.applabel   = ''
+        self.heartbeat  = heartbeat
         for x in ['applabel','topic','callback','durable']:
             if x in kwargs:
                 setattr(self, x, kwargs[x])
@@ -127,6 +129,10 @@ class GenericConsumer(object):
                 self.consumer.backend.queue_bind(queue=self.consumer.queue,
                                                  exchange=self.exchange,
                                                  routing_key=routing_key)
+            if self.heartbeat:
+                self.consumer.backend.queue_bind(queue=self.consumer.queue,
+                                                 exchange='org.mozilla.exchange.pulse.test',
+                                                 routing_key='heartbeat')
 
         # Register the callback the user wants
         self.consumer.register_callback(self.callback)
