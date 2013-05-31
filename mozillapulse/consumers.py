@@ -1,3 +1,7 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 from carrot.connection import BrokerConnection
 from carrot.messaging import Consumer
 
@@ -30,6 +34,7 @@ class GenericConsumer(object):
         self.config     = config
         self.exchange   = exchange
         self.connection = None
+        self.consumer   = None
         self.durable    = False
         self.applabel   = ''
         self.heartbeat  = heartbeat
@@ -71,15 +76,7 @@ class GenericConsumer(object):
         # Purge the queue of existing messages
         self.connection.create_backend().queue_purge(self.applabel)
 
-    # Blocks and calls the callback when a message comes into the queue
-    # For info on one script listening to multiple channels, see
-    # http://ask.github.com/carrot/changelog.html#id1
-    def listen(self, callback=None):
-
-        # One can optionally provide a callback to listen (if it wasn't already)
-        if callback:
-            self.callback = callback
-
+    def _check_params(self):
         # Make suere there is an exchange given
         if not self.exchange:
             raise InvalidExchange(self.exchange)
@@ -96,17 +93,42 @@ class GenericConsumer(object):
         if not self.callback or not hasattr(self.callback, '__call__'):
             raise InvalidCallback(self.callback)
 
+    def _create_consumer(self):
+        self.consumer = Consumer(connection=self.connection,
+                                 queue=self.applabel,
+                                 exchange=self.exchange,
+                                 exchange_type="topic",
+                                 auto_declare=False,
+                                 routing_key=self.topic)
+
+    def queue_exists(self):
+        self._check_params()
+        if not self.connection:
+            self.connect()
+
+        if not self.consumer:
+            self._create_consumer()
+
+        return self.consumer.backend.queue_exists(queue=self.applabel)
+
+    # Blocks and calls the callback when a message comes into the queue
+    # For info on one script listening to multiple channels, see
+    # http://ask.github.com/carrot/changelog.html#id1
+    def listen(self, callback=None):
+
+        # One can optionally provide a callback to listen (if it wasn't already)
+        if callback:
+            self.callback = callback
+
+        self._check_params()
+
         # Connect to the broker if we haven't already
         if not self.connection:
             self.connect()
 
-        # Set up our broker consumer
-        self.consumer = Consumer(connection=self.connection,
-                                   queue=self.applabel,
-                                   exchange=self.exchange,
-                                   exchange_type="topic",
-                                   auto_declare=False,
-                                   routing_key=self.topic)
+        # Set up our broker consumer if we haven't already
+        if not self.consumer:
+            self._create_consumer()
 
         # We need to manually create / declare the queue
         self.consumer.backend.queue_declare(queue=self.applabel,

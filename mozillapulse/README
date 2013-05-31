@@ -63,14 +63,14 @@ from mozillapulse import publishers
 from mozillapulse.messages import hg
 
 # Make a publisher (can't use public/public as it doesn't have access)
-pulse = publishers.HgPublisher(user="", password="")
+pulse = publishers.CodePublisher(user="", password="")
 
 # Message to send
 mymessage = hg.HgCommitMessage('mozilla-1.9.2')
 
-# Fill some fake data, as the messages validate themselves and 
-# HgCommitMessage requires these fields to be there
-for x in ['who','when','changeset','message','link']:
+# Fill some fake data, as the messages validate themselves and
+# HgCommitMessage requires these fields to be there.
+for x in ('id', 'when', 'who', 'repository'):
     mymessage.set_data(x, 'Fake %s data' % x)
 
 # Send the message to the broker through the proper exchange with the correct
