@@ -2,15 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from carrot.connection import BrokerConnection
-from carrot.messaging import Consumer
+from amqp import ChannelError
+from kombu import Connection, Exchange, Queue
 
 from config import PulseConfiguration
 from utils import *
-
-from datetime import datetime
-
-import warnings
 
 # Exceptions we can raise
 class InvalidTopic(Exception):
@@ -26,15 +22,18 @@ class MalformedMessage(Exception):
     pass
 
 
-# Generic publisher class that specific consumers inherit from
 class GenericConsumer(object):
+    """Generic publisher class that specific consumers inherit from.
+    FIXME: Mandatory properties, like "topic", should not be set from generic
+    functions like configure() but should instead be explicitly required
+    somewhere, e.g. the constructor.
+    """
 
     def __init__(self, config, exchange=None, connect=True, heartbeat=False,
                  **kwargs):
         self.config     = config
         self.exchange   = exchange
         self.connection = None
-        self.consumer   = None
         self.durable    = False
         self.applabel   = ''
         self.heartbeat  = heartbeat
@@ -46,75 +45,75 @@ class GenericConsumer(object):
         if connect:
             self.connect()
 
-    # Sets vairables
     def configure(self, **kwargs):
+        """Sets variables."""
+
         for x in kwargs:
             setattr(self, x, kwargs[x])
 
-    # Connect to the message broker
     def connect(self):
         if not self.connection:
-            self.connection = BrokerConnection(hostname=self.config.host,
-                                               port=self.config.port,
-                                               userid=self.config.user,
-                                               password=self.config.password,
-                                               virtual_host=self.config.vhost)
+            self.connection = Connection(hostname=self.config.host,
+                                         port=self.config.port,
+                                         userid=self.config.user,
+                                         password=self.config.password,
+                                         virtual_host=self.config.vhost)
 
-    # Disconnect from the message broker
     def disconnect(self):
         if self.connection:
-            self.connection.close()
+            self.connection.release()
+            self.connection = None
 
-    # Support purging messages that are already in the queue on the broker
-    # TODO: I think this is only supported by the amqp backend
     def purge_existing_messages(self):
+        """Purge messages that are already in the queue on the broker.
+        TODO: I think this is only supported by the amqp backend.
+        """
 
-        # Make sure there is an applabel given
-        if self.durable and not self.applabel:
-            raise InvalidAppLabel('Durable consumers must have an applabel')
-        
-        # Purge the queue of existing messages
-        self.connection.create_backend().queue_purge(self.applabel)
-
-    def _check_params(self):
-        # Make suere there is an exchange given
-        if not self.exchange:
-            raise InvalidExchange(self.exchange)
-
-        # Make sure there is a topic given
-        if not self.topic:
-            raise InvalidTopic(self.topic)
-
-        # Make sure there is an applabel given
         if self.durable and not self.applabel:
             raise InvalidAppLabel('Durable consumers must have an applabel')
 
-        # Make sure there is a callback given
-        if not self.callback or not hasattr(self.callback, '__call__'):
-            raise InvalidCallback(self.callback)
+        if not self.connection:
+            self.connect()
 
-    def _create_consumer(self):
-        self.consumer = Consumer(connection=self.connection,
-                                 queue=self.applabel,
-                                 exchange=self.exchange,
-                                 exchange_type="topic",
-                                 auto_declare=False,
-                                 routing_key=self.topic)
+        queue = self._create_queue(self.applabel)
+        try:
+            queue(self.connection).purge()
+        except ChannelError, e:
+            if e.message == 404:
+                pass
+            raise
 
     def queue_exists(self):
         self._check_params()
         if not self.connection:
             self.connect()
 
-        if not self.consumer:
-            self._create_consumer()
+        queue = self._create_queue(self.applabel)
+        try:
+            queue(self.connection).queue_declare(passive=True)
+        except ChannelError, e:
+            if e.message == 404:
+                return False
+            raise
+        return True
 
-        return self.consumer.backend.queue_exists(queue=self.applabel)
+    def delete_queue(self):
+        self._check_params()
+        if not self.connection:
+            self.connect()
 
-    # Blocks and calls the callback when a message comes into the queue
-    # For info on one script listening to multiple channels, see
-    # http://ask.github.com/carrot/changelog.html#id1
+        queue = self._create_queue(self.applabel)
+        try:
+            queue(self.connection).delete()
+        except ChannelError, e:
+            if e.message != 404:
+                raise
+
     def listen(self, callback=None):
+        """Blocks and calls the callback when a message comes into the queue.
+        For info on one script listening to multiple channels, see
+        http://ask.github.com/carrot/changelog.html#id1.
+        """
 
         # One can optionally provide a callback to listen (if it wasn't already)
         if callback:
@@ -122,91 +121,106 @@ class GenericConsumer(object):
 
         self._check_params()
 
-        # Connect to the broker if we haven't already
         if not self.connection:
             self.connect()
 
-        # Set up our broker consumer if we haven't already
-        if not self.consumer:
-            self._create_consumer()
+        exchange = Exchange(self.exchange, type='topic')
 
-        # We need to manually create / declare the queue
-        self.consumer.backend.queue_declare(queue=self.applabel,
-                                            durable=self.durable,
-                                            exclusive=False,
-                                            auto_delete=not self.durable,
-                                            arguments=self.consumer.queue_arguments,
-                                            warn_if_exists=False)
+        # Create a queue and bind to the first key.
+        queue = self._create_queue(self.applabel, exchange, self.topic[0])
+        consumer = self.connection.Consumer(queue, callbacks=[self.callback])
 
-        # No need to manually create the exchange, as the producer creates it
-        # and we expect it to just be there
+        # Bind to any additional keys.
+        for routing_key in self.topic[1:]:
+            consumer.queues[0].bind_to(exchange, routing_key)
 
-        # We support multiple bindings if we were given an array for the topic
+
+        if self.heartbeat:
+            hb_exchange = Exchange('org.mozilla.exchange.pulse.test',
+                                   type='topic')
+            consumer.queues[0].bind_to(hb_exchange, 'heartbeat')
+
+        with consumer:
+            while True:
+                self.connection.drain_events()
+
+        # Likely never get here but can't hurt.
+        self.disconnect()
+
+    def _check_params(self):
+        if not self.exchange:
+            raise InvalidExchange(self.exchange)
+
+        if not self.topic:
+            raise InvalidTopic(self.topic)
+
+        if self.durable and not self.applabel:
+            raise InvalidAppLabel('Durable consumers must have an applabel')
+
+        if not self.callback or not hasattr(self.callback, '__call__'):
+            raise InvalidCallback(self.callback)
+
+        # We support multiple bindings if we were given an array for the topic.
         if not isinstance(self.topic, list):
             self.topic = [self.topic]
 
-        # We need to bind the queue to the exchange with the specified keys
-        if self.consumer.queue:
-            for routing_key in self.topic:
-                self.consumer.backend.queue_bind(queue=self.consumer.queue,
-                                                 exchange=self.exchange,
-                                                 routing_key=routing_key)
-            if self.heartbeat:
-                self.consumer.backend.queue_bind(queue=self.consumer.queue,
-                                                 exchange='org.mozilla.exchange.pulse.test',
-                                                 routing_key='heartbeat')
+    def _create_queue(self, name, exchange=None, routing_key=''):
+        return Queue(name=name,
+                     exchange=exchange,
+                     routing_key=routing_key,
+                     durable=self.durable,
+                     exclusive=False,
+                     auto_delete=not self.durable)
 
-        # Register the callback the user wants
-        self.consumer.register_callback(self.callback)
-
-        # This blocks, and then calls the user callback every time a message 
-        # comes in
-        self.consumer.wait()
-
-        # Likely never get here but can't hurt
-        self.disconnect()
 
 # ------------------------------------------------------------------------------
 # Consumers for various topics
 # ------------------------------------------------------------------------------
 
 class PulseTestConsumer(GenericConsumer):
-    
+
     def __init__(self, **kwargs):
         super(PulseTestConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.pulse.test', **kwargs)
 
+
 class PulseMetaConsumer(GenericConsumer):
-    
+
     def __init__(self, **kwargs):
         super(PulseMetaConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.pulse', **kwargs)
 
+
 class BugzillaConsumer(GenericConsumer):
-    
+
     def __init__(self, **kwargs):
         super(BugzillaConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.bugzilla', **kwargs)
 
+
 class CodeConsumer(GenericConsumer):
-    
+
     def __init__(self, **kwargs):
         super(CodeConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.code', **kwargs)
 
+
 class HgConsumer(CodeConsumer):
-    
+
     def __init__(self, **kwargs):
         pass
         #super(CodeConsumer, self).__init__(PulseConfiguration(**kwargs), 'hg.push.mozilla.central', **kwargs)
 
+
 class BuildConsumer(GenericConsumer):
-    
+
     def __init__(self, **kwargs):
         super(BuildConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.build', **kwargs)
+
 
 class NormalizedBuildConsumer(GenericConsumer):
 
     def __init__(self, **kwargs):
         super(NormalizedBuildConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.build.normalized', **kwargs)
 
+
 class QAConsumer(GenericConsumer):
-    
+
     def __init__(self, **kwargs):
         super(QAConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.qa', **kwargs)

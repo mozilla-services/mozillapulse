@@ -8,12 +8,12 @@
 from setuptools import setup
 
 setup(name='MozillaPulse',
-      version='0.61',
+      version='0.7',
       description='Helper library for interacting with the Mozilla Pulse ' +
                   'message system at pulse.mozilla.org',
-      author='Christian Legnitto',
-      author_email='clegnitto@mozilla.com',
+      author='Mark Cote',
+      author_email='mcote@mozilla.com',
       license='MPL',
-      packages=['mozillapulse','mozillapulse.messages'],
-      install_requires=['carrot', 'pytz'],
+      packages=['mozillapulse', 'mozillapulse.messages'],
+      install_requires=['kombu', 'pytz'],
 )

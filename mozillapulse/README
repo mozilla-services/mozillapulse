@@ -1,7 +1,8 @@
 Overview
 --------------------------------------------
 
-Mozilla pulse is a prototype event manager / message broker. Documentation will maybe live at pulse.mozilla.org
+Mozilla pulse is a prototype event manager / message broker. Documentation will
+maybe live at pulse.mozilla.org.
 
 This library is a thin wrapper above others to make connecting to Mozilla Pulse
 easier. The mozillapulse library is very immature but still fairly useful.
@@ -11,13 +12,19 @@ It may change completely in the future.
 Contact
 --------------------------------------------
 
-Questions / comments contact Christian Legnitto <clegnitto@mozilla.com>
-Note that I am a release manager not a python programmer, so patches welcome!
+This package is now maintained by Mark Cote <mcote@mozilla.com>.
+The pulse system in general is owned by Dave Lawrence <dkl@mozilla.com>.
+The original author of mozillapulse and the pulse system architect was
+Christian Legnitto <LegNeato@legnitto.com>.
 
 Requirements
 --------------------------------------------
 
-* carrot (http://github.com/ask/carrot)
+* kombu (http://github.com/ask/kombu)
+* pytz (http://pytz.sourceforge.net/)
+
+Where possible, use the provided setup.py script or use pip with
+requirements.txt.
 
 Example consumer script:
 --------------------------------------------
@@ -26,9 +33,9 @@ Example consumer script:
 from mozillapulse import consumers
 
 # Define a callback
-def got_message(data, message):
+def got_message(body, message):
     # Show we got something
-    print "GOT MESSAGE: %s %s" % (data, message)
+    print "GOT MESSAGE: %s %s" % (body, message)
     # Ack the message so it is removed from the broker's queue
     message.ack()
 
@@ -37,7 +44,7 @@ def got_message(data, message):
 # Also note the applabel should be unique as the message broker does
 # round-robin delivery when there is more than one connection to a queue
 # (which the applabel specifies). You likely don't want that behavior
-pulse = consumers.HgConsumer(applabel='you@example.com|mycoolapp')
+pulse = consumers.CodeConsumer(applabel='you@example.com|mycoolapp')
 
 # Tell the broker what we want to listen for ('#' is everything) and give our
 # callback
