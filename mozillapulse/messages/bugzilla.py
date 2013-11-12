@@ -6,6 +6,23 @@ from base import *
 from mozillapulse.utils import email_to_routing_key
 
 # ------------------------------------------------------------------------------
+# Simple bug notification from Bugzilla's PushNotify extension
+# ------------------------------------------------------------------------------
+
+class SimpleBugMessage(GenericMessage):
+
+    def _required_data_field(self):
+        tmp = super(SimpleBugMessage, self)._required_data_fields()
+        tmp.append('id')
+        tmp.append('delta_ts')
+        return tmp
+
+    def set(self, bug_id, delta_ts):
+        self.routing_parts = [str(bug_id)]
+        self.set_data('id', bug_id)
+        self.set_data('delta_ts', delta_ts)
+
+# ------------------------------------------------------------------------------
 # Generic base class for messages that have to do with bugs
 # ------------------------------------------------------------------------------
 

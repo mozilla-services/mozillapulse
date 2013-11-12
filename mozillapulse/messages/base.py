@@ -11,7 +11,7 @@ class MalformedMessage(Exception):
 
 # Base class that other objects should inherit from
 class GenericMessage(object):
-    
+
     def __init__(self, routing_key=None):
         self.routing_parts = []
         self.routing_key = routing_key
@@ -40,10 +40,10 @@ class GenericMessage(object):
 
     # Called right before the message is sent
     def _prepare(self):
-        
+
         # Fill out the routing key (if needed)
         self._prepare_routing_key()
-        
+
         # Check for a blank routing key
         if not self.routing_key:
             raise InvalidRoutingKey(self.routing_key)
@@ -57,4 +57,5 @@ class GenericMessage(object):
 
     # Pretty printing
     def __str__(self):
-        return u'%s instance: %s: %s' % (self.__class__, self.routing_key, self.data)
+        return u'%s instance: %s: %s' % (self.__class__, self.routing_key,
+                                         self.data)

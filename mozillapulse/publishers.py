@@ -99,6 +99,12 @@ class BugzillaPublisher(GenericPublisher):
         super(BugzillaPublisher, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.bugzilla')
 
 
+class SimpleBugzillaPublisher(GenericPublisher):
+
+    def __init__(self, **kwargs):
+        super(SimpleBugzillaPublisher, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.bugzilla.simple')
+
+
 class CodePublisher(GenericPublisher):
 
     def __init__(self, **kwargs):
