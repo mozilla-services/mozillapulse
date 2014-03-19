@@ -92,7 +92,7 @@ class GenericConsumer(object):
         try:
             queue(self.connection).queue_declare(passive=True)
         except ChannelError, e:
-            if e.message == 404:
+            if e.message == 404 or e.reply_code == 404:
                 return False
             raise
         return True
