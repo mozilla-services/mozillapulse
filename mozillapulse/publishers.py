@@ -102,7 +102,11 @@ class BugzillaPublisher(GenericPublisher):
 class SimpleBugzillaPublisher(GenericPublisher):
 
     def __init__(self, **kwargs):
-        super(SimpleBugzillaPublisher, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.bugzilla.simple')
+        exchange = 'org.mozilla.exchange.bugzilla.simple'
+        if kwargs.get('dev'):
+            exchange += '.dev'
+        super(SimpleBugzillaPublisher, self).__init__(
+            PulseConfiguration(**kwargs), exchange)
 
 
 class CodePublisher(GenericPublisher):

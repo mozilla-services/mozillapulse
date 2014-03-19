@@ -198,7 +198,11 @@ class BugzillaConsumer(GenericConsumer):
 class SimpleBugzillaConsumer(GenericConsumer):
 
     def __init__(self, **kwargs):
-        super(SimpleBugzillaConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.bugzilla.simple', **kwargs)
+        exchange = 'org.mozilla.exchange.bugzilla.simple'
+        if kwargs.get('dev'):
+            exchange += '.dev'
+        super(SimpleBugzillaConsumer, self).__init__(PulseConfiguration(
+                **kwargs), exchange, **kwargs)
 
 
 class CodeConsumer(GenericConsumer):
