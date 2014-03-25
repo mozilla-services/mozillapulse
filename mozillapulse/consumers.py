@@ -109,7 +109,7 @@ class GenericConsumer(object):
             if e.message != 404:
                 raise
 
-    def listen(self, callback=None):
+    def listen(self, callback=None, on_connect_callback=None):
         """Blocks and calls the callback when a message comes into the queue.
         For info on one script listening to multiple channels, see
         http://ask.github.com/carrot/changelog.html#id1.
@@ -128,6 +128,8 @@ class GenericConsumer(object):
 
         # Create a queue and bind to the first key.
         queue = self._create_queue(self.applabel, exchange, self.topic[0])
+        if on_connect_callback:
+            on_connect_callback()
         consumer = self.connection.Consumer(queue, callbacks=[self.callback])
 
         # Bind to any additional keys.
