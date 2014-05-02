@@ -14,7 +14,6 @@ class PulseConfiguration:
             'host':       'pulse.mozilla.org',
             'port':       5672,
             'vhost':      '/',
-            'ssl':        False,
             # Message defaults
             'serializer': 'json',
             'broker_timezone': 'US/Pacific',
