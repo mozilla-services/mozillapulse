@@ -3,6 +3,7 @@
 
 import Queue
 import multiprocessing
+import sys
 import time
 import unittest
 import uuid
@@ -204,7 +205,7 @@ class TestBuild(PulseTestMixin, unittest.TestCase):
 def main(pulse_opts):
     global pulse_cfg
     pulse_cfg.update(pulse_opts)
-    unittest.main()
+    unittest.main(argv=sys.argv[0:1])
 
 
 if __name__ == '__main__':

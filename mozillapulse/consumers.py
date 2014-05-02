@@ -57,7 +57,8 @@ class GenericConsumer(object):
                                          port=self.config.port,
                                          userid=self.config.user,
                                          password=self.config.password,
-                                         virtual_host=self.config.vhost)
+                                         virtual_host=self.config.vhost,
+                                         ssl=self.config.ssl)
 
     def disconnect(self):
         if self.connection:
