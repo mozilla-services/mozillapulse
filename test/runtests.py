@@ -9,7 +9,7 @@ import unittest
 import uuid
 
 from mozillapulse import consumers, publishers
-from mozillapulse.messages import build, hg
+from mozillapulse.messages import build, hg, test
 
 # Default RabbitMQ host settings are as defined in the accompanying
 # vagrant puppet files.
@@ -199,6 +199,17 @@ class TestBuild(PulseTestMixin, unittest.TestCase):
         msg.set_data('platform', 'linux64')
         msg.set_data('build_date', '2013-05-28 18:49:05')
         msg.set_data('package_type', 'debug')
+        return msg
+
+
+class TestTest(PulseTestMixin, unittest.TestCase):
+
+    consumer = consumers.PulseTestConsumer
+    publisher = publishers.PulseTestPublisher
+
+    def _build_message(self, msg_id):
+        msg = test.TestMessage()
+        msg.set_data('id', msg_id)
         return msg
 
 
