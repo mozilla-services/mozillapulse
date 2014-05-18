@@ -15,16 +15,6 @@ Exec {
     path => "/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin",
 }
 
-file {"/etc/profile.d/treeherder.sh":
-    content => "
-export PULSE_RABBITMQ_USER='${RABBITMQ_USER}'
-export PULSE_RABBITMQ_PASSWORD='${RABBITMQ_PASSWORD}'
-export PULSE_RABBITMQ_VHOST='${RABBITMQ_VHOST}'
-export PULSE_RABBITMQ_HOST='${RABBITMQ_HOST}'
-export PULSE_RABBITMQ_PORT='${RABBITMQ_PORT}'
-"
-}
-
 class dev {
     class {
         init: before => Class[rabbitmq];
