@@ -13,7 +13,7 @@ setup(name='MozillaPulse',
                   'message system at pulse.mozilla.org',
       author='Mark Cote',
       author_email='mcote@mozilla.com',
-      license='MPL',
+      license='MPL 2.0',
       packages=['mozillapulse', 'mozillapulse.messages'],
       install_requires=['kombu', 'pytz'],
 )
