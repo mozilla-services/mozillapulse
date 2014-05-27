@@ -2,6 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+DEFAULT_PORT = 5672
+DEFAULT_SSL_PORT = 5671
+
 class PulseConfiguration:
 
     def __init__(self, **kwargs):
@@ -12,21 +15,25 @@ class PulseConfiguration:
             'user':       'public',
             'password':   'public',
             'host':       'pulse.mozilla.org',
-            'port':       5672,
             'vhost':      '/',
-            'ssl':        False,
+            'ssl':        True,
             # Message defaults
             'serializer': 'json',
             'broker_timezone': 'US/Pacific',
         }
 
-        # Set any vaiables passed in
+        # Set any variables passed in.
         for key in kwargs:
             setattr(self, key, kwargs[key])
 
-        # Set defaults for anything that isn't passed in
+        # Set defaults for anything that isn't passed in.
         for key in defaults:
-            try:
-                tmp = getattr(self, key)
-            except AttributeError:
+            if not hasattr(self, key):
                 setattr(self, key, defaults[key])
+
+        # Set defaults for special variables.
+        if not hasattr(self, 'port'):
+            if self.ssl:
+                self.port = DEFAULT_SSL_PORT
+            else:
+                self.port = DEFAULT_PORT
