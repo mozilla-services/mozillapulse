@@ -8,7 +8,7 @@
 from setuptools import setup
 
 setup(name='MozillaPulse',
-      version='0.92',
+      version='0.93',
       description='Helper library for interacting with the Mozilla Pulse ' +
                   'message system at pulse.mozilla.org',
       url='http://pulse.mozilla.org',
