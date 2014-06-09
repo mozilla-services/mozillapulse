@@ -94,12 +94,6 @@ class PulseMetaPublisher(GenericPublisher):
         super(PulseMetaPublisher, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.pulse')
 
 
-class BugzillaPublisher(GenericPublisher):
-
-    def __init__(self, **kwargs):
-        super(BugzillaPublisher, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.bugzilla')
-
-
 class SimpleBugzillaPublisher(GenericPublisher):
 
     def __init__(self, **kwargs):
@@ -114,13 +108,6 @@ class CodePublisher(GenericPublisher):
 
     def __init__(self, **kwargs):
         super(CodePublisher, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.code')
-
-
-class HgPublisher(CodePublisher):
-
-    def __init__(self, **kwargs):
-        super(HgPublisher, self).__init__(PulseConfiguration(**kwargs))
-        warnings.warn('HgPublisher is now CodePublisher', DeprecationWarning)
 
 
 class BuildPublisher(GenericPublisher):
