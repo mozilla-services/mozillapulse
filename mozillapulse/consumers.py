@@ -192,12 +192,6 @@ class PulseMetaConsumer(GenericConsumer):
         super(PulseMetaConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.pulse', **kwargs)
 
 
-class BugzillaConsumer(GenericConsumer):
-
-    def __init__(self, **kwargs):
-        super(BugzillaConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.bugzilla', **kwargs)
-
-
 class SimpleBugzillaConsumer(GenericConsumer):
 
     def __init__(self, **kwargs):
@@ -212,13 +206,6 @@ class CodeConsumer(GenericConsumer):
 
     def __init__(self, **kwargs):
         super(CodeConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.code', **kwargs)
-
-
-class HgConsumer(CodeConsumer):
-
-    def __init__(self, **kwargs):
-        pass
-        #super(CodeConsumer, self).__init__(PulseConfiguration(**kwargs), 'hg.push.mozilla.central', **kwargs)
 
 
 class BuildConsumer(GenericConsumer):
