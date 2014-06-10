@@ -15,6 +15,7 @@ from mozillapulse.messages import build, hg, test
 # vagrant puppet files.
 DEFAULT_RABBIT_HOST = '192.168.33.10'
 DEFAULT_RABBIT_PORT = 5672
+DEFAULT_RABBIT_SSL = False
 DEFAULT_RABBIT_VHOST = 'pulse'
 DEFAULT_RABBIT_USER = 'pulse'
 DEFAULT_RABBIT_PASSWORD = 'pulse'
@@ -230,6 +231,10 @@ if __name__ == '__main__':
                       default=DEFAULT_RABBIT_PORT,
                       help='port on which RabbitMQ is running; defaults to %d'
                       % DEFAULT_RABBIT_PORT)
+    parser.add_option('--ssl', action='store_true', dest='ssl',
+                      default=DEFAULT_RABBIT_SSL,
+                      help='use SSL; defaults to %s' %
+                      ('enabled' if DEFAULT_RABBIT_SSL else 'disabled',)),
     parser.add_option('--vhost', action='store', dest='vhost',
                       default=DEFAULT_RABBIT_VHOST,
                       help='name of pulse vhost; defaults to "%s"' %
