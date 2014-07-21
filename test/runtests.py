@@ -16,7 +16,7 @@ from mozillapulse.messages import build, hg, test
 DEFAULT_RABBIT_HOST = '192.168.33.10'
 DEFAULT_RABBIT_PORT = 5672
 DEFAULT_RABBIT_SSL = False
-DEFAULT_RABBIT_VHOST = 'pulse'
+DEFAULT_RABBIT_VHOST = '/'
 DEFAULT_RABBIT_USER = 'pulse'
 DEFAULT_RABBIT_PASSWORD = 'pulse'
 
