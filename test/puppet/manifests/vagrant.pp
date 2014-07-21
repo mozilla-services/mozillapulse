@@ -7,7 +7,7 @@ import "classes/*.pp"
 # so it's not required.
 $RABBITMQ_USER = 'pulse'
 $RABBITMQ_PASSWORD = 'pulse'
-$RABBITMQ_VHOST = 'pulse'
+$RABBITMQ_VHOST = '/'
 $RABBITMQ_HOST = 'localhost'
 $RABBITMQ_PORT = '5672'
 

@@ -2,8 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import warnings
-
 from datetime import datetime
 
 from kombu import Connection, Exchange, Producer
@@ -85,21 +83,23 @@ class GenericPublisher(object):
 class PulseTestPublisher(GenericPublisher):
 
     def __init__(self, **kwargs):
-        super(PulseTestPublisher, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.pulse.test')
+        super(PulseTestPublisher, self).__init__(
+            PulseConfiguration(**kwargs), 'exchange/pulse/test')
 
 
 class PulseMetaPublisher(GenericPublisher):
 
     def __init__(self, **kwargs):
-        super(PulseMetaPublisher, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.pulse')
+        super(PulseMetaPublisher, self).__init__(
+            PulseConfiguration(**kwargs), 'exchange/pulse')
 
 
 class SimpleBugzillaPublisher(GenericPublisher):
 
     def __init__(self, **kwargs):
-        exchange = 'org.mozilla.exchange.bugzilla.simple'
+        exchange = 'exchange/bugzilla/simple'
         if kwargs.get('dev'):
-            exchange += '.dev'
+            exchange += '/dev'
         super(SimpleBugzillaPublisher, self).__init__(
             PulseConfiguration(**kwargs), exchange)
 
@@ -107,16 +107,19 @@ class SimpleBugzillaPublisher(GenericPublisher):
 class CodePublisher(GenericPublisher):
 
     def __init__(self, **kwargs):
-        super(CodePublisher, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.code')
+        super(CodePublisher, self).__init__(
+            PulseConfiguration(**kwargs), 'exchange/code')
 
 
 class BuildPublisher(GenericPublisher):
 
     def __init__(self, **kwargs):
-        super(BuildPublisher, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.build')
+        super(BuildPublisher, self).__init__(
+            PulseConfiguration(**kwargs), 'exchange/build')
 
 
 class QAPublisher(GenericPublisher):
 
     def __init__(self, **kwargs):
-        super(QAPublisher, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.qa')
+        super(QAPublisher, self).__init__(
+            PulseConfiguration(**kwargs), 'exchange/qa')

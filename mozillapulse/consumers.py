@@ -2,6 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import uuid
+
 from amqp import ChannelError
 from kombu import Connection, Exchange, Queue
 
@@ -31,19 +33,35 @@ class GenericConsumer(object):
 
     def __init__(self, config, exchange=None, connect=True, heartbeat=False,
                  **kwargs):
-        self.config     = config
-        self.exchange   = exchange
+        self.config = config
+        self.exchange = exchange
         self.connection = None
-        self.durable    = False
-        self.applabel   = ''
-        self.heartbeat  = heartbeat
-        for x in ['applabel','topic','callback','durable']:
+        self.durable = False
+        self.applabel = ''
+        self.heartbeat = heartbeat
+        for x in ['applabel', 'topic', 'callback', 'durable']:
             if x in kwargs:
                 setattr(self, x, kwargs[x])
                 del kwargs[x]
 
+        # Only used if there is no applabel.
+        self.queue_gen_name = None
+
         if connect:
             self.connect()
+
+    @property
+    def queue_name(self):
+        # This is a property instead of being set in the constructor since
+        # applabel can be set later via configure().
+        queue_name = 'queue/%s/' % self.config.user
+        if self.applabel:
+            queue_name += self.applabel
+        else:
+            if not self.queue_gen_name:
+                self.queue_gen_name = str(uuid.uuid1())
+            queue_name += self.queue_gen_name
+        return queue_name
 
     def configure(self, **kwargs):
         """Sets variables."""
@@ -76,7 +94,7 @@ class GenericConsumer(object):
         if not self.connection:
             self.connect()
 
-        queue = self._create_queue(self.applabel)
+        queue = self._create_queue()
         try:
             queue(self.connection).purge()
         except ChannelError, e:
@@ -89,7 +107,7 @@ class GenericConsumer(object):
         if not self.connection:
             self.connect()
 
-        queue = self._create_queue(self.applabel)
+        queue = self._create_queue()
         try:
             queue(self.connection).queue_declare(passive=True)
         except ChannelError, e:
@@ -103,7 +121,7 @@ class GenericConsumer(object):
         if not self.connection:
             self.connect()
 
-        queue = self._create_queue(self.applabel)
+        queue = self._create_queue()
         try:
             queue(self.connection).delete()
         except ChannelError, e:
@@ -127,20 +145,29 @@ class GenericConsumer(object):
 
         exchange = Exchange(self.exchange, type='topic')
 
-        # Create a queue and bind to the first key.
-        queue = self._create_queue(self.applabel, exchange, self.topic[0])
+        # Raise an error if the exchange doesn't exist.
+        exchange(self.connection).declare(passive=True)
+
+        # Create a queue.
+        queue = self._create_queue(exchange, self.topic[0])
         if on_connect_callback:
             on_connect_callback()
-        consumer = self.connection.Consumer(queue, callbacks=[self.callback])
+
+        # Don't autodeclare, since we don't want consumers trying to
+        # declare exchanges.
+        consumer = self.connection.Consumer(queue, auto_declare=False,
+                                            callbacks=[self.callback])
+
+        consumer.queues[0].queue_declare()
+        # Bind to the first key.
+        consumer.queues[0].queue_bind()
 
         # Bind to any additional keys.
         for routing_key in self.topic[1:]:
             consumer.queues[0].bind_to(exchange, routing_key)
 
-
         if self.heartbeat:
-            hb_exchange = Exchange('org.mozilla.exchange.pulse.test',
-                                   type='topic')
+            hb_exchange = Exchange('exchange/pulse/test', type='topic')
             consumer.queues[0].bind_to(hb_exchange, 'heartbeat')
 
         with consumer:
@@ -167,8 +194,8 @@ class GenericConsumer(object):
         if not isinstance(self.topic, list):
             self.topic = [self.topic]
 
-    def _create_queue(self, name, exchange=None, routing_key=''):
-        return Queue(name=name,
+    def _create_queue(self, exchange=None, routing_key=''):
+        return Queue(name=self.queue_name,
                      exchange=exchange,
                      routing_key=routing_key,
                      durable=self.durable,
@@ -183,21 +210,23 @@ class GenericConsumer(object):
 class PulseTestConsumer(GenericConsumer):
 
     def __init__(self, **kwargs):
-        super(PulseTestConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.pulse.test', **kwargs)
+        super(PulseTestConsumer, self).__init__(
+            PulseConfiguration(**kwargs), 'exchange/pulse/test', **kwargs)
 
 
 class PulseMetaConsumer(GenericConsumer):
 
     def __init__(self, **kwargs):
-        super(PulseMetaConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.pulse', **kwargs)
+        super(PulseMetaConsumer, self).__init__(
+            PulseConfiguration(**kwargs), 'exchange/pulse', **kwargs)
 
 
 class SimpleBugzillaConsumer(GenericConsumer):
 
     def __init__(self, **kwargs):
-        exchange = 'org.mozilla.exchange.bugzilla.simple'
+        exchange = 'exchange/bugzilla/simple'
         if kwargs.get('dev'):
-            exchange += '.dev'
+            exchange += '/dev'
         super(SimpleBugzillaConsumer, self).__init__(PulseConfiguration(
                 **kwargs), exchange, **kwargs)
 
@@ -205,22 +234,27 @@ class SimpleBugzillaConsumer(GenericConsumer):
 class CodeConsumer(GenericConsumer):
 
     def __init__(self, **kwargs):
-        super(CodeConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.code', **kwargs)
+        super(CodeConsumer, self).__init__(
+            PulseConfiguration(**kwargs), 'exchange/code', **kwargs)
 
 
 class BuildConsumer(GenericConsumer):
 
     def __init__(self, **kwargs):
-        super(BuildConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.build', **kwargs)
+        super(BuildConsumer, self).__init__(
+            PulseConfiguration(**kwargs), 'exchange/build', **kwargs)
 
 
 class NormalizedBuildConsumer(GenericConsumer):
 
     def __init__(self, **kwargs):
-        super(NormalizedBuildConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.build.normalized', **kwargs)
+        super(NormalizedBuildConsumer, self).__init__(
+            PulseConfiguration(**kwargs), 'exchange/build/normalized',
+            **kwargs)
 
 
 class QAConsumer(GenericConsumer):
 
     def __init__(self, **kwargs):
-        super(QAConsumer, self).__init__(PulseConfiguration(**kwargs), 'org.mozilla.exchange.qa', **kwargs)
+        super(QAConsumer, self).__init__(
+            PulseConfiguration(**kwargs), 'exchange/qa', **kwargs)
