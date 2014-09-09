@@ -2,10 +2,13 @@ mozillapulse tests
 ==================
 
 This directory contains some basic feature tests for the mozillapulse package.
-Since mozillapulse is just a layer on top of an AMQP server, they require a
-RabbitMQ server with a vhost and a user with full read-write privileges
-(technically consumers and producers require different privileges, but for
-the sake of simplicity, the tests only use one user).
+Tests in unittests.py are unittests that can be run on their own without
+any special environment.
+
+Tests in runtests.py require a RabbitMQ server with a vhost and a user with
+full read-write privileges (technically consumers and producers require
+different privileges, but for the sake of simplicity, the tests only use one
+user).
 
 To ease setup, a Vagrantfile has been provided with a RabbitMQ configuration.
 By default, the host is created at 192.168.33.10, and RabbitMQ is configured
