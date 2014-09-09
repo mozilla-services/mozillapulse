@@ -17,4 +17,5 @@ setup(name='MozillaPulse',
       license='MPL 2.0',
       packages=['mozillapulse', 'mozillapulse.messages'],
       install_requires=['kombu', 'pytz'],
+      test_suite='test.unittests',
 )
