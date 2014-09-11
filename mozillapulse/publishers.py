@@ -84,14 +84,14 @@ class PulseTestPublisher(GenericPublisher):
 
     def __init__(self, **kwargs):
         super(PulseTestPublisher, self).__init__(
-            PulseConfiguration(**kwargs), 'exchange/pulse/test')
+            PulseConfiguration(**kwargs), 'exchange/pulse/test', **kwargs)
 
 
 class PulseMetaPublisher(GenericPublisher):
 
     def __init__(self, **kwargs):
         super(PulseMetaPublisher, self).__init__(
-            PulseConfiguration(**kwargs), 'exchange/pulse')
+            PulseConfiguration(**kwargs), 'exchange/pulse', **kwargs)
 
 
 class SimpleBugzillaPublisher(GenericPublisher):
@@ -101,25 +101,32 @@ class SimpleBugzillaPublisher(GenericPublisher):
         if kwargs.get('dev'):
             exchange += '/dev'
         super(SimpleBugzillaPublisher, self).__init__(
-            PulseConfiguration(**kwargs), exchange)
+            PulseConfiguration(**kwargs), exchange, **kwargs)
 
 
 class CodePublisher(GenericPublisher):
 
     def __init__(self, **kwargs):
         super(CodePublisher, self).__init__(
-            PulseConfiguration(**kwargs), 'exchange/code')
+            PulseConfiguration(**kwargs), 'exchange/code', **kwargs)
 
 
 class BuildPublisher(GenericPublisher):
 
     def __init__(self, **kwargs):
         super(BuildPublisher, self).__init__(
-            PulseConfiguration(**kwargs), 'exchange/build')
+            PulseConfiguration(**kwargs), 'exchange/build', **kwargs)
+
+
+class NormalizedBuildPublisher(GenericPublisher):
+
+    def __init__(self, **kwargs):
+        super(NormalizedBuildPublisher, self).__init__(
+            PulseConfiguration(**kwargs), 'exchange/build/normalized', **kwargs)
 
 
 class QAPublisher(GenericPublisher):
 
     def __init__(self, **kwargs):
         super(QAPublisher, self).__init__(
-            PulseConfiguration(**kwargs), 'exchange/qa')
+            PulseConfiguration(**kwargs), 'exchange/qa', **kwargs)
