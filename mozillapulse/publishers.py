@@ -22,7 +22,7 @@ class MalformedMessage(Exception):
 class GenericPublisher(object):
     """Generic publisher class that specific publishers inherit from."""
 
-    def __init__(self, config, exchange=None, connect=True):
+    def __init__(self, config, exchange=None, connect=True, **kwargs):
         self.config = config
         self.exchange = exchange
         self.connection = None
@@ -91,7 +91,7 @@ class PulseMetaPublisher(GenericPublisher):
 
     def __init__(self, **kwargs):
         super(PulseMetaPublisher, self).__init__(
-            PulseConfiguration(**kwargs), 'exchange/pulse', **kwargs)
+            PulseConfiguration(**kwargs), 'exchange/pulse/', **kwargs)
 
 
 class SimpleBugzillaPublisher(GenericPublisher):
@@ -108,14 +108,14 @@ class CodePublisher(GenericPublisher):
 
     def __init__(self, **kwargs):
         super(CodePublisher, self).__init__(
-            PulseConfiguration(**kwargs), 'exchange/code', **kwargs)
+            PulseConfiguration(**kwargs), 'exchange/code/', **kwargs)
 
 
 class BuildPublisher(GenericPublisher):
 
     def __init__(self, **kwargs):
         super(BuildPublisher, self).__init__(
-            PulseConfiguration(**kwargs), 'exchange/build', **kwargs)
+            PulseConfiguration(**kwargs), 'exchange/build/', **kwargs)
 
 
 class NormalizedBuildPublisher(GenericPublisher):
@@ -129,4 +129,4 @@ class QAPublisher(GenericPublisher):
 
     def __init__(self, **kwargs):
         super(QAPublisher, self).__init__(
-            PulseConfiguration(**kwargs), 'exchange/qa', **kwargs)
+            PulseConfiguration(**kwargs), 'exchange/qa/', **kwargs)
