@@ -218,7 +218,7 @@ class PulseMetaConsumer(GenericConsumer):
 
     def __init__(self, **kwargs):
         super(PulseMetaConsumer, self).__init__(
-            PulseConfiguration(**kwargs), 'exchange/pulse', **kwargs)
+            PulseConfiguration(**kwargs), 'exchange/pulse/', **kwargs)
 
 
 class SimpleBugzillaConsumer(GenericConsumer):
@@ -235,14 +235,14 @@ class CodeConsumer(GenericConsumer):
 
     def __init__(self, **kwargs):
         super(CodeConsumer, self).__init__(
-            PulseConfiguration(**kwargs), 'exchange/code', **kwargs)
+            PulseConfiguration(**kwargs), 'exchange/code/', **kwargs)
 
 
 class BuildConsumer(GenericConsumer):
 
     def __init__(self, **kwargs):
         super(BuildConsumer, self).__init__(
-            PulseConfiguration(**kwargs), 'exchange/build', **kwargs)
+            PulseConfiguration(**kwargs), 'exchange/build/', **kwargs)
 
 
 class NormalizedBuildConsumer(GenericConsumer):
@@ -257,4 +257,4 @@ class QAConsumer(GenericConsumer):
 
     def __init__(self, **kwargs):
         super(QAConsumer, self).__init__(
-            PulseConfiguration(**kwargs), 'exchange/qa', **kwargs)
+            PulseConfiguration(**kwargs), 'exchange/qa/', **kwargs)
