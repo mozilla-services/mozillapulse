@@ -8,6 +8,8 @@ import time
 import unittest
 import uuid
 
+from amqp import AccessRefused
+
 from mozillapulse import consumers, publishers
 from mozillapulse.messages import build, hg, test
 
@@ -17,12 +19,11 @@ DEFAULT_RABBIT_HOST = '192.168.33.10'
 DEFAULT_RABBIT_PORT = 5672
 DEFAULT_RABBIT_SSL = False
 DEFAULT_RABBIT_VHOST = '/'
-DEFAULT_RABBIT_USER = 'pulse'
-DEFAULT_RABBIT_PASSWORD = 'pulse'
 
-# Global pulse configuration.
-pulse_cfg = {}
-
+# Global user configuration.
+pulse_cfg = {'user': 'pulse', 'password': 'pulse'}
+code_cfg = {'user': 'code', 'password': 'code'}
+build_cfg = {'user': 'build', 'password': 'build'}
 
 class ConsumerSubprocess(multiprocessing.Process):
 
@@ -57,6 +58,7 @@ class PulseTestMixin(object):
     # Override these.
     consumer = None
     publisher = None
+    user_cfg = {}
 
     QUEUE_CHECK_PERIOD = 0.05
     QUEUE_CHECK_ATTEMPTS = 4000
@@ -100,10 +102,10 @@ class PulseTestMixin(object):
         # Publish one message to ensure the exchange exists.  Since there is
         # no consumer yet, it will be discarded.
         msg = self._build_message('1')
-        publisher = self.publisher(**pulse_cfg)
+        publisher = self.publisher(**self.user_cfg)
         publisher.publish(msg)
 
-        consumer_cfg = pulse_cfg.copy()
+        consumer_cfg = self.user_cfg.copy()
         consumer_cfg['applabel'] = str(uuid.uuid1())
         self.proc = ConsumerSubprocess(self.consumer, consumer_cfg)
         self.proc.start()
@@ -120,10 +122,10 @@ class PulseTestMixin(object):
 
     def test_durable(self):
         msg = self._build_message('1')
-        publisher = self.publisher(**pulse_cfg)
+        publisher = self.publisher(**self.user_cfg)
         publisher.publish(msg)
 
-        consumer_cfg = pulse_cfg.copy()
+        consumer_cfg = self.user_cfg.copy()
         consumer_cfg['applabel'] = str(uuid.uuid1())
         self.proc = ConsumerSubprocess(self.consumer, consumer_cfg, True)
         self.proc.start()
@@ -174,6 +176,8 @@ class TestCode(PulseTestMixin, unittest.TestCase):
     consumer = consumers.CodeConsumer
     publisher = publishers.CodePublisher
 
+    user_cfg = code_cfg
+
     def _build_message(self, msg_id):
         msg = hg.HgCommitMessage('mozilla-central')
         msg.set_data('id', msg_id)
@@ -186,6 +190,8 @@ class TestBuild(PulseTestMixin, unittest.TestCase):
 
     consumer = consumers.BuildConsumer
     publisher = publishers.BuildPublisher
+
+    user_cfg = build_cfg
 
     def _build_message(self, msg_id):
         msg = build.BuildPostedMessage()
@@ -208,17 +214,35 @@ class TestTest(PulseTestMixin, unittest.TestCase):
     consumer = consumers.PulseTestConsumer
     publisher = publishers.PulseTestPublisher
 
+    user_cfg = pulse_cfg
+
     def _build_message(self, msg_id):
         msg = test.TestMessage()
         msg.set_data('id', msg_id)
         return msg
 
+class PulseTestPermission(unittest.TestCase):
+    publisher = publishers.PulseTestPublisher
+
+    user_cfg = code_cfg
+
+    def _build_message(self, msg_id):
+        msg = test.TestMessage()
+        msg.set_data('id', msg_id)
+        return msg  
+
+    def test_permission(self):
+        msg = self._build_message('1')
+        publisher = self.publisher(**self.user_cfg)
+        self.assertRaises(AccessRefused, publisher.publish, msg)
+
 
 def main(pulse_opts):
     global pulse_cfg
     pulse_cfg.update(pulse_opts)
+    code_cfg.update(pulse_opts)
+    build_cfg.update(pulse_opts)
     unittest.main(argv=sys.argv[0:1])
-
 
 if __name__ == '__main__':
     from optparse import OptionParser
@@ -239,13 +263,5 @@ if __name__ == '__main__':
                       default=DEFAULT_RABBIT_VHOST,
                       help='name of pulse vhost; defaults to "%s"' %
                       DEFAULT_RABBIT_VHOST)
-    parser.add_option('--user', action='store', dest='user',
-                      default=DEFAULT_RABBIT_USER,
-                      help='name of pulse RabbitMQ user; defaults to "%s"' %
-                      DEFAULT_RABBIT_USER)
-    parser.add_option('--password', action='store', dest='password',
-                      default=DEFAULT_RABBIT_PASSWORD,
-                      help='password of pulse RabbitMQ user; defaults to "%s"'
-                      % DEFAULT_RABBIT_PASSWORD)
     (opts, args) = parser.parse_args()
     main(opts.__dict__)

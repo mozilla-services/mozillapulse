@@ -3,10 +3,6 @@
 #
 import "classes/*.pp"
 
-# You can make these less generic if you like, but these are box-specific
-# so it's not required.
-$RABBITMQ_USER = 'pulse'
-$RABBITMQ_PASSWORD = 'pulse'
 $RABBITMQ_VHOST = '/'
 $RABBITMQ_HOST = 'localhost'
 $RABBITMQ_PORT = '5672'
