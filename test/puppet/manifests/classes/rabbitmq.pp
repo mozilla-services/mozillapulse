@@ -9,9 +9,21 @@ class rabbitmq {
         require => Package['rabbitmq-server'];
     }
 
-    exec{ "create-rabbitmq-user":
-        command => "rabbitmqctl add_user ${RABBITMQ_USER} ${RABBITMQ_PASSWORD}",
-        unless => "rabbitmqctl list_users | grep ${RABBITMQ_USER}",
+    exec{ "create-rabbitmq-user-test":
+        command => "rabbitmqctl add_user pulse pulse",
+        unless => "rabbitmqctl list_users | grep pulse",
+        require => Service['rabbitmq-server']
+    }
+
+    exec{ "create-rabbitmq-user-code":
+        command => "rabbitmqctl add_user code code",
+        unless => "rabbitmqctl list_users | grep code",
+        require => Service['rabbitmq-server']
+    }
+
+    exec{ "create-rabbitmq-user-build":
+        command => "rabbitmqctl add_user build build",
+        unless => "rabbitmqctl list_users | grep build",
         require => Service['rabbitmq-server']
     }
 
@@ -21,11 +33,29 @@ class rabbitmq {
         require => Service['rabbitmq-server']
     }
 
-    exec{ "grant-rabbitmq-permissions":
-        command => "rabbitmqctl set_permissions -p ${RABBITMQ_VHOST} ${RABBITMQ_USER} \".*\" \".*\" \".*\"",
-        unless => "rabbitmqctl list_user_permissions ${RABBITMQ_USER} | grep -P \"${RABBITMQ_VHOST}\t.*\t.*\t.*\"",
+    exec{ "grant-rabbitmq-permissions-test":
+        command => "rabbitmqctl set_permissions -p ${RABBITMQ_VHOST} pulse \"^(queue/pulse/.*|exchange/pulse/.*)\" \"^(queue/pulse/.*|exchange/pulse/.*)\" \"^(queue/pulse/.*|exchange/.*)\"",
+        unless => "rabbitmqctl list_user_permissions pulse | grep -P \"${RABBITMQ_VHOST}\t^(queue/pulse/.*|exchange/pulse/.*)\t^(queue/pulse/.*|exchange/pulse/.*)\t^(queue/pulse/.*|exchange/.*)",
         require => [
-            Exec["create-rabbitmq-user"],
+            Exec["create-rabbitmq-user-test"],
+            Exec["create-rabbitmq-vhost"]
+        ]
+    }
+
+    exec{ "grant-rabbitmq-permissions-code":
+        command => "rabbitmqctl set_permissions -p ${RABBITMQ_VHOST} code \"^(queue/code/.*|exchange/code/.*)\" \"^(queue/code/.*|exchange/code/.*)\" \"^(queue/code/.*|exchange/.*)\"",
+        unless => "rabbitmqctl list_user_permissions code | grep -P \"${RABBITMQ_VHOST}\t^(queue/code/.*|exchange/code.*)\t^(queue/code/.*|exchange/code/.*)\t^(queue/code/.*|exchange/.*)",
+        require => [
+            Exec["create-rabbitmq-user-code"],
+            Exec["create-rabbitmq-vhost"]
+        ]
+    }
+
+    exec{ "grant-rabbitmq-permissions-build":
+        command => "rabbitmqctl set_permissions -p ${RABBITMQ_VHOST} build \"^(queue/build/.*|exchange/build/.*)\" \"^(queue/build/.*|exchange/build/.*)\" \"^(queue/build/.*|exchange/.*)\"",
+        unless => "rabbitmqctl list_user_permissions build | grep -P \"${RABBITMQ_VHOST}\t^(queue/build/.*|exchange/build/.*)\t^(queue/build/.*|exchange/build/.*)\t^(queue/build/.*|exchange/.*)",
+        require => [
+            Exec["create-rabbitmq-user-build"],
             Exec["create-rabbitmq-vhost"]
         ]
     }
