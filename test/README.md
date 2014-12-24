@@ -15,7 +15,7 @@ code	 |code
 pulse	 |pulse
 
 as well as the following user permission settings (as per the 
-[security model](https://wiki.mozilla.org/Auto-tools/Projects/Pulse#Security_Model)):
+[security model][]):
 
 	Conf:	"^(queue/<user>/.*|exchange/<user>/.*)"
 	Write: 	"^(queue/<user>/.*|exchange/<user>/.*)"
@@ -29,9 +29,11 @@ with a vhost called "/" and the users/permissions specified above.
 If you use your own RabbitMQ installation, you must use the appropriate 
 options with runtests.py.
 
-The tests in runtests.py are very basic, just to ensure that the common APIs
-work properly.  Not all consumers and publishers are tested, since they are
-all derived classes with very few differences.
+The tests in runtests.py ensure that the common APIs work properly and that
+the user permissions listed above actually enforce the security model
+(arguably the latter should go into the PulseGuardian repository, however).
+Not all consumers and publishers are tested, since they are all derived
+classes with very few differences.
 
 Since GenericConsumer.listen() is not intended to exit, we launch it in a
 separate process (using the multiprocessing module) instead of a thread, since
@@ -50,3 +52,5 @@ options.
 
 These tests are specifically not referenced in mozillapulse's setup.py since
 they require some setup.
+
+[security model]: https://wiki.mozilla.org/Auto-tools/Projects/Pulse#Security_Model
