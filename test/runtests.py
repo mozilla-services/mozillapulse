@@ -221,20 +221,47 @@ class TestTest(PulseTestMixin, unittest.TestCase):
         msg.set_data('id', msg_id)
         return msg
 
-class PulseTestPermission(unittest.TestCase):
-    publisher = publishers.PulseTestPublisher
+class ModifiedConsumer(consumers.GenericConsumer):
 
-    user_cfg = code_cfg
+    def __init__(self, **kwargs):
+        super(ModifiedConsumer, self).__init__(
+            consumers.PulseConfiguration(**kwargs), 'exchange/code/', **kwargs)
 
+    def _create_queue(self, exchange=None, routing_key=''):
+        return consumers.Queue(name='queue/pulse/test',
+            exchange=exchange,
+            routing_key=routing_key,
+            durable=self.durable,
+            exclusive=False,
+            auto_delete=not self.durable)
+
+class TestPermission(unittest.TestCase):
+    """
+    A suite of permission tests.
+    """
     def _build_message(self, msg_id):
         msg = test.TestMessage()
         msg.set_data('id', msg_id)
         return msg  
 
-    def test_permission(self):
+    def test_wrong_user(self):
+        # Tests assertion of AccessRefused exception when attempting to publish to
+        # 'exchange/pulse/test' using the 'code' publisher.
+	
         msg = self._build_message('1')
-        publisher = self.publisher(**self.user_cfg)
+        publisher = publishers.PulseTestPublisher(**code_cfg)
         self.assertRaises(AccessRefused, publisher.publish, msg)
+
+    def test_wrong_queue(self):
+        # Tests assertion of AccessRefused exception when attempting to connect to 
+        # 'queue/pulse/test' using the 'code' consumer.
+	
+        def cb(body, message):
+            message.ack()
+        consumer = ModifiedConsumer(durable=False, **code_cfg)
+        consumer.configure(topic='#', callback=cb)
+
+        self.assertRaises(AccessRefused, consumer.listen)
 
 
 def main(pulse_opts):
