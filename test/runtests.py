@@ -221,6 +221,7 @@ class TestTest(PulseTestMixin, unittest.TestCase):
         msg.set_data('id', msg_id)
         return msg
 
+
 class ModifiedConsumer(consumers.GenericConsumer):
 
     def __init__(self, **kwargs):
@@ -235,6 +236,7 @@ class ModifiedConsumer(consumers.GenericConsumer):
             exclusive=False,
             auto_delete=not self.durable)
 
+
 class TestPermission(unittest.TestCase):
     """
     A suite of permission tests.
@@ -242,20 +244,20 @@ class TestPermission(unittest.TestCase):
     def _build_message(self, msg_id):
         msg = test.TestMessage()
         msg.set_data('id', msg_id)
-        return msg  
+        return msg
 
     def test_wrong_user(self):
-        # Tests assertion of AccessRefused exception when attempting to publish to
-        # 'exchange/pulse/test' using the 'code' publisher.
-	
+        # Tests assertion of AccessRefused exception when attempting to
+        # publish to 'exchange/pulse/test' using the 'code' publisher.
+
         msg = self._build_message('1')
         publisher = publishers.PulseTestPublisher(**code_cfg)
         self.assertRaises(AccessRefused, publisher.publish, msg)
 
     def test_wrong_queue(self):
-        # Tests assertion of AccessRefused exception when attempting to connect to 
-        # 'queue/pulse/test' using the 'code' consumer.
-	
+        # Tests assertion of AccessRefused exception when attempting to
+        # connect to 'queue/pulse/test' using the 'code' consumer.
+
         def cb(body, message):
             message.ack()
         consumer = ModifiedConsumer(durable=False, **code_cfg)
@@ -270,6 +272,7 @@ def main(pulse_opts):
     code_cfg.update(pulse_opts)
     build_cfg.update(pulse_opts)
     unittest.main(argv=sys.argv[0:1])
+
 
 if __name__ == '__main__':
     from optparse import OptionParser
