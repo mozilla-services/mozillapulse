@@ -130,3 +130,10 @@ class QAPublisher(GenericPublisher):
     def __init__(self, **kwargs):
         super(QAPublisher, self).__init__(
             PulseConfiguration(**kwargs), 'exchange/qa/', **kwargs)
+
+
+class MozReviewPublisher(GenericPublisher):
+
+    def __init__(self, **kwargs):
+        super(MozReviewPublisher, self).__init__(
+            PulseConfiguration(**kwargs), 'exchange/mozreview/', **kwargs)

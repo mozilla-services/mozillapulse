@@ -258,3 +258,10 @@ class QAConsumer(GenericConsumer):
     def __init__(self, **kwargs):
         super(QAConsumer, self).__init__(
             PulseConfiguration(**kwargs), 'exchange/qa/', **kwargs)
+
+
+class MozReviewConsumer(GenericConsumer):
+
+    def __init__(self, **kwargs):
+        super(MozReviewConsumer, self).__init__(
+            PulseConfiguration(**kwargs), 'exchange/mozreview/', **kwargs)
