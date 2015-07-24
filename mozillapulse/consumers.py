@@ -20,6 +20,9 @@ class InvalidAppLabel(Exception):
 class InvalidCallback(Exception):
     pass
 
+class InvalidExchange(Exception):
+    pass
+
 class MalformedMessage(Exception):
     pass
 
@@ -143,7 +146,7 @@ class GenericConsumer(object):
         if not self.connection:
             self.connect()
 
-        exchange = Exchange(self.exchange, type='topic')
+        exchange = Exchange(self.exchange[0], type='topic')
 
         # Raise an error if the exchange doesn't exist.
         exchange(self.connection).declare(passive=True)
@@ -163,8 +166,11 @@ class GenericConsumer(object):
         consumer.queues[0].queue_bind()
 
         # Bind to any additional keys.
-        for routing_key in self.topic[1:]:
-            consumer.queues[0].bind_to(exchange, routing_key)
+        for new_exchange, new_topic in zip(self.exchange[1:], self.topic[1:]):
+            exchange = Exchange(new_exchange, type='topic')
+            exchange(self.connection).declare(passive=True)
+
+            consumer.queues[0].bind_to(new_exchange, new_topic)
 
         if self.heartbeat:
             hb_exchange = Exchange('exchange/pulse/test', type='topic')
@@ -193,6 +199,16 @@ class GenericConsumer(object):
         # We support multiple bindings if we were given an array for the topic.
         if not isinstance(self.topic, list):
             self.topic = [self.topic]
+
+        # We support multiple exchanges if we were given an array for
+        # the exchange. In this case, the exchange list and the topic
+        # list must have the same length.
+        if not isinstance(self.exchange, list):
+            self.exchange = [self.exchange] * len(self.topic)
+        elif len(self.exchange) != len(self.topic):
+            raise InvalidExchange(
+                "The list of exchanges must have the same length as the list of"
+                " topics.")
 
     def _create_queue(self, exchange=None, routing_key=''):
         return Queue(name=self.queue_name,

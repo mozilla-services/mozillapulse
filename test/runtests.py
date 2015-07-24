@@ -40,7 +40,7 @@ class ConsumerSubprocess(multiprocessing.Process):
             queue.put(body)
             message.ack()
         consumer = self.consumer_class(durable=self.durable, **self.config)
-        consumer.configure(topic='#', callback=cb)
+        consumer.configure(topic=['#']*len(consumer.exchange), callback=cb)
         consumer.listen()
 
 
@@ -78,7 +78,7 @@ class PulseTestMixin(object):
     def _wait_for_queue(self, config, queue_should_exist=True):
         # Wait until queue has been created by consumer process.
         consumer = self.consumer(**config)
-        consumer.configure(topic='#', callback=lambda x, y: None)
+        consumer.configure(topic=['#']*len(consumer.exchange), callback=lambda x, y: None)
         attempts = 0
         while attempts < self.QUEUE_CHECK_ATTEMPTS:
             attempts += 1
@@ -152,7 +152,7 @@ class PulseTestMixin(object):
 
         # Purge messages and add a new one.
         consumer = self.consumer(**consumer_cfg)
-        consumer.configure(topic='#', callback=lambda x, y: None)
+        consumer.configure(topic=['#']*len(consumer.exchange), callback=lambda x, y: None)
         consumer.purge_existing_messages()
         msg = self._build_message('4')
         publisher.publish(msg)
@@ -166,7 +166,7 @@ class PulseTestMixin(object):
 
         # Delete the queue.
         consumer = self.consumer(**consumer_cfg)
-        consumer.configure(topic='#', callback=lambda x, y: None)
+        consumer.configure(topic=['#']*len(consumer.exchange), callback=lambda x, y: None)
         consumer.delete_queue()
         self._wait_for_queue(consumer_cfg, False)
 
@@ -215,6 +215,55 @@ class TestTest(PulseTestMixin, unittest.TestCase):
     publisher = publishers.PulseTestPublisher
 
     user_cfg = pulse_cfg
+
+    def _build_message(self, msg_id):
+        msg = test.TestMessage()
+        msg.set_data('id', msg_id)
+        return msg
+
+
+class MultipleExchangesConsumer(consumers.GenericConsumer):
+
+    def __init__(self, **kwargs):
+        super(MultipleExchangesConsumer, self).__init__(
+            consumers.PulseConfiguration(**kwargs),
+            ['exchange/code/', 'exchange/pulse/test'], **kwargs)
+
+
+class TestMultipleExchanges(PulseTestMixin, unittest.TestCase):
+    consumer = MultipleExchangesConsumer
+    publisher = publishers.CodePublisher
+
+    user_cfg = code_cfg
+
+    def setUp(self):
+        """We need to make sure both exchanges exist."""
+        publisher2 = publishers.PulseTestPublisher(**pulse_cfg)
+        msg = test.TestMessage()
+        msg.set_data('id', '0')
+        publisher2.publish(msg)
+
+    def _build_message(self, msg_id):
+        msg = hg.HgCommitMessage('mozilla-central')
+        msg.set_data('id', msg_id)
+        msg.set_data('when', '1369685091')
+        msg.set_data('who', 'somedev@mozilla.com')
+        return msg
+
+
+class TestMultipleExchangesAgain(PulseTestMixin, unittest.TestCase):
+    consumer = MultipleExchangesConsumer
+    publisher = publishers.PulseTestPublisher
+
+    user_cfg = pulse_cfg
+
+    def setUp(self):
+        publisher2 = publishers.CodePublisher(**code_cfg)
+        msg = hg.HgCommitMessage('mozilla-central')
+        msg.set_data('id', '0')
+        msg.set_data('when', '1369685091')
+        msg.set_data('who', 'somedev@mozilla.com')
+        publisher2.publish(msg)
 
     def _build_message(self, msg_id):
         msg = test.TestMessage()
