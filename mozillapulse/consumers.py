@@ -2,15 +2,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import logging
 import uuid
+from socket import timeout as socket_timeout
 
 from amqp import ChannelError
 from kombu import Connection, Exchange, Queue
 
-from config import PulseConfiguration
-from utils import *
+from mozillapulse.config import PulseConfiguration
+from mozillapulse.publishers import InvalidExchange
 
-# Exceptions we can raise
+
 class InvalidTopic(Exception):
     pass
 
@@ -35,13 +37,14 @@ class GenericConsumer(object):
     """
 
     def __init__(self, config, exchange=None, connect=True, heartbeat=False,
-                 **kwargs):
+                 timeout=None, **kwargs):
         self.config = config
         self.exchange = exchange
         self.connection = None
         self.durable = False
         self.applabel = ''
-        self.heartbeat = heartbeat
+        self.heartbeat = heartbeat,
+        self.timeout = timeout
         for x in ['applabel', 'topic', 'callback', 'durable']:
             if x in kwargs:
                 setattr(self, x, kwargs[x])
@@ -136,7 +139,16 @@ class GenericConsumer(object):
         For info on one script listening to multiple channels, see
         http://ask.github.com/carrot/changelog.html#id1.
         """
+        while True:
+            consumer = self._build_consumer(
+                callback=callback,
+                on_connect_callback=on_connect_callback
+            )
+            with consumer:
+                self._drain_events_loop()
 
+
+    def _build_consumer(self, callback=None, on_connect_callback=None):
         # One can optionally provide a callback to listen (if it wasn't already)
         if callback:
             self.callback = callback
@@ -176,12 +188,19 @@ class GenericConsumer(object):
             hb_exchange = Exchange('exchange/pulse/test', type='topic')
             consumer.queues[0].bind_to(hb_exchange, 'heartbeat')
 
-        with consumer:
-            while True:
-                self.connection.drain_events()
+        return consumer
 
-        # Likely never get here but can't hurt.
-        self.disconnect()
+    def _drain_events_loop(self):
+        while True:
+            try:
+                self.connection.drain_events(timeout=self.timeout)
+            except socket_timeout:
+                logging.warning("Timeout! Restarting pulse consumer.")
+                try:
+                    self.disconnect()
+                except Exception:
+                    logging.warning("Problem with disconnect().")
+                break
 
     def _check_params(self):
         if not self.exchange:
