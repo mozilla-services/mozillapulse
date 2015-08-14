@@ -5,16 +5,17 @@ This directory contains some basic feature tests for the mozillapulse package.
 Tests in unittests.py are unittests that can be run on their own without
 any special environment.
 
-Tests in runtests.py require a RabbitMQ server with a vhost and the following 
+Tests in runtests.py require a RabbitMQ server with a vhost and the following
 users and password settings:
 
-USERNAME |PASSWORD
----------|--------
-build	 |build
-code	 |code
-pulse	 |pulse
+USERNAME    |PASSWORD
+------------|--------
+build       | build
+code        | code
+pulse       | pulse
+taskcluster | taskcluster
 
-as well as the following user permission settings (as per the 
+as well as the following user permission settings (as per the
 [security model][]):
 
 	Conf:	"^(queue/<user>/.*|exchange/<user>/.*)"
@@ -26,7 +27,7 @@ where <user> is replaced with each of the usernames above.
 To ease setup, a Vagrantfile has been provided with a RabbitMQ configuration.
 By default, the host is created at 192.168.33.10, RabbitMQ is configured
 with a vhost called "/" and the users/permissions specified above.
-If you use your own RabbitMQ installation, you must use the appropriate 
+If you use your own RabbitMQ installation, you must use the appropriate
 options with runtests.py.
 
 The tests in runtests.py ensure that the common APIs work properly and that

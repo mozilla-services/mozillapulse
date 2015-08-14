@@ -8,6 +8,8 @@ import time
 import unittest
 import uuid
 
+from optparse import OptionParser
+
 from amqp import AccessRefused
 
 from mozillapulse import consumers, publishers
@@ -24,6 +26,8 @@ DEFAULT_RABBIT_VHOST = '/'
 pulse_cfg = {'user': 'pulse', 'password': 'pulse'}
 code_cfg = {'user': 'code', 'password': 'code'}
 build_cfg = {'user': 'build', 'password': 'build'}
+taskcluster_cfg = {'user': 'taskcluster', 'password': 'taskcluster'}
+
 
 class ConsumerSubprocess(multiprocessing.Process):
 
@@ -40,7 +44,7 @@ class ConsumerSubprocess(multiprocessing.Process):
             queue.put(body)
             message.ack()
         consumer = self.consumer_class(durable=self.durable, **self.config)
-        consumer.configure(topic=['#']*len(consumer.exchange), callback=cb)
+        consumer.configure(topic=['#'] * len(consumer.exchange), callback=cb)
         consumer.listen()
 
 
@@ -78,7 +82,7 @@ class PulseTestMixin(object):
     def _wait_for_queue(self, config, queue_should_exist=True):
         # Wait until queue has been created by consumer process.
         consumer = self.consumer(**config)
-        consumer.configure(topic=['#']*len(consumer.exchange), callback=lambda x, y: None)
+        consumer.configure(topic=['#'] * len(consumer.exchange), callback=lambda x, y: None)
         attempts = 0
         while attempts < self.QUEUE_CHECK_ATTEMPTS:
             attempts += 1
@@ -152,7 +156,7 @@ class PulseTestMixin(object):
 
         # Purge messages and add a new one.
         consumer = self.consumer(**consumer_cfg)
-        consumer.configure(topic=['#']*len(consumer.exchange), callback=lambda x, y: None)
+        consumer.configure(topic=['#'] * len(consumer.exchange), callback=lambda x, y: None)
         consumer.purge_existing_messages()
         msg = self._build_message('4')
         publisher.publish(msg)
@@ -166,7 +170,7 @@ class PulseTestMixin(object):
 
         # Delete the queue.
         consumer = self.consumer(**consumer_cfg)
-        consumer.configure(topic=['#']*len(consumer.exchange), callback=lambda x, y: None)
+        consumer.configure(topic=['#'] * len(consumer.exchange), callback=lambda x, y: None)
         consumer.delete_queue()
         self._wait_for_queue(consumer_cfg, False)
 
@@ -218,6 +222,41 @@ class TestTest(PulseTestMixin, unittest.TestCase):
 
     def _build_message(self, msg_id):
         msg = test.TestMessage()
+        msg.set_data('id', msg_id)
+        return msg
+
+
+class TaskClusterQueuePublisher(publishers.GenericPublisher):
+
+    def __init__(self, **kwargs):
+        super(TaskClusterQueuePublisher, self).__init__(
+            consumers.PulseConfiguration(**kwargs),
+            'exchange/taskcluster-queue/v1/task-completed/', **kwargs)
+
+
+class TaskClusterSchedulerPublisher(publishers.GenericPublisher):
+
+    def __init__(self, **kwargs):
+        super(TaskClusterSchedulerPublisher, self).__init__(
+            consumers.PulseConfiguration(**kwargs),
+            'exchange/taskcluster-scheduler/v1/task-graph-finished/', **kwargs)
+
+
+class TestTaskCluster(PulseTestMixin, unittest.TestCase):
+    consumer = consumers.TaskClusterConsumer
+    publisher = TaskClusterQueuePublisher
+
+    user_cfg = taskcluster_cfg
+
+    def setUp(self):
+        """We need to make sure to send a message to both exchanges."""
+        publisher2 = TaskClusterSchedulerPublisher(**taskcluster_cfg)
+        msg = self._build_message('0')
+        publisher2.publish(msg)
+
+    def _build_message(self, msg_id):
+        msg = test.GenericMessage()
+        msg.routing_parts = ['taskcluster']
         msg.set_data('id', msg_id)
         return msg
 
@@ -315,16 +354,7 @@ class TestPermission(unittest.TestCase):
         self.assertRaises(AccessRefused, consumer.listen)
 
 
-def main(pulse_opts):
-    global pulse_cfg
-    pulse_cfg.update(pulse_opts)
-    code_cfg.update(pulse_opts)
-    build_cfg.update(pulse_opts)
-    unittest.main(argv=sys.argv[0:1])
-
-
-if __name__ == '__main__':
-    from optparse import OptionParser
+def main():
     parser = OptionParser()
     parser.add_option('--host', action='store', dest='host',
                       default=DEFAULT_RABBIT_HOST,
@@ -343,4 +373,15 @@ if __name__ == '__main__':
                       help='name of pulse vhost; defaults to "%s"' %
                       DEFAULT_RABBIT_VHOST)
     (opts, args) = parser.parse_args()
-    main(opts.__dict__)
+
+    # Update configurations for testing host
+    pulse_cfg.update(opts.__dict__)
+    code_cfg.update(opts.__dict__)
+    build_cfg.update(opts.__dict__)
+    taskcluster_cfg.update(opts.__dict__)
+
+    unittest.main(argv=sys.argv[0:1])
+
+
+if __name__ == '__main__':
+    main()

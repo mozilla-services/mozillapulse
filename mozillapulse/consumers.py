@@ -10,20 +10,23 @@ from amqp import ChannelError
 from kombu import Connection, Exchange, Queue
 
 from mozillapulse.config import PulseConfiguration
-from mozillapulse.publishers import InvalidExchange
 
 
 class InvalidTopic(Exception):
     pass
 
+
 class InvalidAppLabel(Exception):
     pass
+
 
 class InvalidCallback(Exception):
     pass
 
+
 class InvalidExchange(Exception):
     pass
+
 
 class MalformedMessage(Exception):
     pass
@@ -147,7 +150,6 @@ class GenericConsumer(object):
             with consumer:
                 self._drain_events_loop()
 
-
     def _build_consumer(self, callback=None, on_connect_callback=None):
         # One can optionally provide a callback to listen (if it wasn't already)
         if callback:
@@ -263,7 +265,7 @@ class SimpleBugzillaConsumer(GenericConsumer):
         if kwargs.get('dev'):
             exchange += '/dev'
         super(SimpleBugzillaConsumer, self).__init__(PulseConfiguration(
-                **kwargs), exchange, **kwargs)
+            **kwargs), exchange, **kwargs)
 
 
 class CodeConsumer(GenericConsumer):
@@ -300,3 +302,13 @@ class MozReviewConsumer(GenericConsumer):
     def __init__(self, **kwargs):
         super(MozReviewConsumer, self).__init__(
             PulseConfiguration(**kwargs), 'exchange/mozreview/', **kwargs)
+
+
+class TaskClusterConsumer(GenericConsumer):
+
+    def __init__(self, **kwargs):
+        super(TaskClusterConsumer, self).__init__(
+            PulseConfiguration(**kwargs),
+            ['exchange/taskcluster-queue/v1/task-completed/',
+             'exchange/taskcluster-scheduler/v1/task-graph-finished/',
+             ], **kwargs)

@@ -27,6 +27,12 @@ class rabbitmq {
         require => Service['rabbitmq-server']
     }
 
+    exec{ "create-rabbitmq-user-taskcluster":
+        command => "rabbitmqctl add_user taskcluster taskcluster",
+        unless => "rabbitmqctl list_users | grep taskcluster",
+        require => Service['rabbitmq-server']
+    }
+
     exec{ "create-rabbitmq-vhost":
         command => "rabbitmqctl add_vhost ${RABBITMQ_VHOST}",
         unless => "rabbitmqctl list_vhosts | grep ${RABBITMQ_VHOST}",
@@ -56,6 +62,15 @@ class rabbitmq {
         unless => "rabbitmqctl list_user_permissions build | grep -P \"${RABBITMQ_VHOST}\t^(queue/build/.*|exchange/build/.*)\t^(queue/build/.*|exchange/build/.*)\t^(queue/build/.*|exchange/.*)",
         require => [
             Exec["create-rabbitmq-user-build"],
+            Exec["create-rabbitmq-vhost"]
+        ]
+    }
+
+    exec{ "grant-rabbitmq-permissions-taskcluster":
+        command => "rabbitmqctl set_permissions -p ${RABBITMQ_VHOST} taskcluster \"^(queue/taskcluster/.*|exchange/taskcluster.*)\" \"^(queue/taskcluster/.*|exchange/taskcluster.*)\" \"^(queue/taskcluster/.*|exchange/.*)\"",
+        unless => "rabbitmqctl list_user_permissions taskcluster | grep -P \"${RABBITMQ_VHOST}\t^(queue/taskcluster/.*|exchange/taskcluster.*)\t^(queue/taskcluster/.*|exchange/taskcluster.*)\t^(queue/taskcluster/.*|exchange/.*)",
+        require => [
+            Exec["create-rabbitmq-user-taskcluster"],
             Exec["create-rabbitmq-vhost"]
         ]
     }
