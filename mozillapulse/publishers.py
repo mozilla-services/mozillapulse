@@ -26,6 +26,7 @@ class GenericPublisher(object):
         self.config = config
         self.exchange = exchange
         self.connection = None
+
         if connect:
             self.connect()
 
