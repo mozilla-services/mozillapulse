@@ -309,6 +309,6 @@ class TaskClusterConsumer(GenericConsumer):
     def __init__(self, **kwargs):
         super(TaskClusterConsumer, self).__init__(
             PulseConfiguration(**kwargs),
-            ['exchange/taskcluster-queue/v1/task-completed/',
-             'exchange/taskcluster-scheduler/v1/task-graph-finished/',
+            ['exchange/taskcluster-queue/v1/task-completed',
+             'exchange/taskcluster-scheduler/v1/task-graph-finished',
              ], **kwargs)
