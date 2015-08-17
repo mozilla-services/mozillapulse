@@ -231,7 +231,7 @@ class TaskClusterQueuePublisher(publishers.GenericPublisher):
     def __init__(self, **kwargs):
         super(TaskClusterQueuePublisher, self).__init__(
             consumers.PulseConfiguration(**kwargs),
-            'exchange/taskcluster-queue/v1/task-completed/', **kwargs)
+            'exchange/taskcluster-queue/v1/task-completed', **kwargs)
 
 
 class TaskClusterSchedulerPublisher(publishers.GenericPublisher):
@@ -239,7 +239,7 @@ class TaskClusterSchedulerPublisher(publishers.GenericPublisher):
     def __init__(self, **kwargs):
         super(TaskClusterSchedulerPublisher, self).__init__(
             consumers.PulseConfiguration(**kwargs),
-            'exchange/taskcluster-scheduler/v1/task-graph-finished/', **kwargs)
+            'exchange/taskcluster-scheduler/v1/task-graph-finished', **kwargs)
 
 
 class TestTaskCluster(PulseTestMixin, unittest.TestCase):
