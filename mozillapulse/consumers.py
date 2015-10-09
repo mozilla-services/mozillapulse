@@ -46,7 +46,7 @@ class GenericConsumer(object):
         self.connection = None
         self.durable = False
         self.applabel = ''
-        self.heartbeat = heartbeat,
+        self.heartbeat = heartbeat
         self.timeout = timeout
         for x in ['applabel', 'topic', 'callback', 'durable']:
             if x in kwargs:
