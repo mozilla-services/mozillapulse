@@ -3,17 +3,17 @@ It contains classes for consumers, publishers, and messages.
 
 In order to use a Mozilla Pulse consumer, you must register with
 [PulseGuardian][] to create a Pulse user.  Here's an example of
-creating a heartbeat (test) consumer:
+creating a Buildbot consumer:
 
-    from mozillapulse.consumers import PulseTestConsumer
+    from mozillapulse.consumers import BuildConsumer
 
     def callback(body, msg):
         print 'Received message: %s' % body
 
-    c = PulseTestConsumer(user=<PulseGuardian user>,
-                          password=<PulseGuardian password>,
-                          topic='#',
-                          callback=callback)
+    c = BuildConsumer(user=<PulseGuardian user>,
+                      password=<PulseGuardian password>,
+                      topic='#',
+                      callback=callback)
     c.listen()
 
 See the HACKING.md file for instructions on setting up a local Pulse
