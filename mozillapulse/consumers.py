@@ -9,7 +9,7 @@ from socket import timeout as socket_timeout
 from amqp import ChannelError
 from kombu import Connection, Exchange, Queue
 
-from mozillapulse.config import PulseConfiguration
+from .config import PulseConfiguration
 
 
 class InvalidTopic(Exception):
@@ -106,7 +106,7 @@ class GenericConsumer(object):
         queue = self._create_queue()
         try:
             queue(self.connection).purge()
-        except ChannelError, e:
+        except ChannelError as e:
             if e.message == 404:
                 pass
             raise
@@ -119,7 +119,7 @@ class GenericConsumer(object):
         queue = self._create_queue()
         try:
             queue(self.connection).queue_declare(passive=True)
-        except ChannelError, e:
+        except ChannelError as e:
             if e.message == 404 or e.reply_code == 404:
                 return False
             raise
@@ -133,7 +133,7 @@ class GenericConsumer(object):
         queue = self._create_queue()
         try:
             queue(self.connection).delete()
-        except ChannelError, e:
+        except ChannelError as e:
             if e.message != 404:
                 raise
 

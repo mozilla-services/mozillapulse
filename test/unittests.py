@@ -2,7 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import ConfigParser
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 import unittest
 
 from mozillapulse.config import (PulseConfiguration, DEFAULT_PORT,
@@ -12,12 +15,12 @@ from mozillapulse.config import (PulseConfiguration, DEFAULT_PORT,
 class TestConfig(unittest.TestCase):
 
     def verify_defaults(self, pulse_cfg, except_opts=[]):
-        for opt_name, opt_dflt in PulseConfiguration.defaults.iteritems():
+        for opt_name, opt_dflt in PulseConfiguration.defaults.items():
             if opt_name not in except_opts:
                 self.assertEqual(getattr(pulse_cfg, opt_name), opt_dflt)
 
     def test_config(self):
-        cfg = ConfigParser.ConfigParser()
+        cfg = configparser.ConfigParser()
         pulse_cfg = PulseConfiguration.read_from_config(cfg)
         self.verify_defaults(pulse_cfg)
         cfg.add_section('pulse')

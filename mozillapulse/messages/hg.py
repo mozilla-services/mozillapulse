@@ -2,8 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from base import *
-from mozillapulse.utils import extract_bug_ids, repo_parts
+from .base import GenericMessage
+from ..utils import repo_parts
+
 
 # ------------------------------------------------------------------------------
 # Generic base class for messages that have to do with HG
@@ -40,6 +41,7 @@ class HgRepoStatusMessage(GenericHgMessage):
         super(HgRepoStatusMessage, self).__init__()
         self.routing_parts.append('repo')
 
+
 # FIXME: This doesn't really follow general -> specific pattern
 class HgRepoClosedMessage(HgRepoStatusMessage):
 
@@ -48,6 +50,7 @@ class HgRepoClosedMessage(HgRepoStatusMessage):
         self.routing_parts.append('closed')
         self.data['repository'] = repo
 
+
 # FIXME: This doesn't really follow general -> specific pattern
 class HgRepoOpenedMessage(HgRepoStatusMessage):
 
@@ -55,6 +58,7 @@ class HgRepoOpenedMessage(HgRepoStatusMessage):
         super(HgRepoOpenedMessage, self).__init__()
         self.routing_parts.append('opened')
         self.data['repository'] = repo
+
 
 # ------------------------------------------------------------------------------
 # Messages that have to do with commits and pushes
@@ -73,12 +77,6 @@ class HgCommitMessage(GenericHgMessage):
         tmp.append('who')
         return tmp
 
-    #def _prepare(self):
-    #    super(HgCommitMessage, self)._prepare()
-        # Parse the message for bug ids
-        #bugs = extract_bug_ids(self.data['message'])
-        #if bugs:
-        #    self.set_data('bug_ids', bugs)
 
 class HgPushMessage(GenericHgMessage):
 
@@ -93,4 +91,3 @@ class HgPushMessage(GenericHgMessage):
         tmp.append('who')
         tmp.append('changesets')
         return tmp
-

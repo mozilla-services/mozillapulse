@@ -1,11 +1,16 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+import sys
+
+if sys.version_info > (3,):
+    basestring = (str, bytes)
 
 DEFAULT_PORT = 5672
 DEFAULT_SSL_PORT = 5671
 
-class PulseConfiguration:
+
+class PulseConfiguration(object):
 
     # Default values for Mozilla pulse
     defaults = {
@@ -46,7 +51,7 @@ class PulseConfiguration:
         """
         opts = {}
         if cfg.has_section(section):
-            for opt_name, opt_dflt in PulseConfiguration.defaults.iteritems():
+            for opt_name, opt_dflt in PulseConfiguration.defaults.items():
                 if cfg.has_option(section, opt_name):
                     if isinstance(opt_dflt, basestring):
                         opts[opt_name] = cfg.get(section, opt_name)

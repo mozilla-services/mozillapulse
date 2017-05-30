@@ -2,12 +2,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
 # Custom exceptions
 class InvalidRoutingKey(Exception):
     pass
 
+
 class MalformedMessage(Exception):
     pass
+
 
 # Base class that other objects should inherit from
 class GenericMessage(object):

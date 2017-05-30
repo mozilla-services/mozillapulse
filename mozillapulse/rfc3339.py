@@ -15,15 +15,15 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 '''Formats dates according to the :RFC:`3339`.'''
+import datetime
+import time
+import unittest
 
 __author__ = 'Henry Precheur <henry@precheur.org>'
 __license__ = 'ISCL'
 __version__ = '3'
 __all__ = ('rfc3339', )
 
-import datetime
-import time
-import unittest
 
 def _timezone(utcoffset):
     '''
@@ -50,6 +50,7 @@ def _timezone(utcoffset):
 
     return '%c%02d:%02d' % (plusminus, hours, minutes)
 
+
 def _timedelta_to_seconds(timedelta):
     '''
     >>> _timedelta_to_seconds(datetime.timedelta(hours=3))
@@ -59,6 +60,7 @@ def _timedelta_to_seconds(timedelta):
     '''
     return (timedelta.days * 86400 + timedelta.seconds +
             timedelta.microseconds // 1000)
+
 
 def _utc_offset(date, use_system_timezone):
     '''
@@ -78,15 +80,17 @@ def _utc_offset(date, use_system_timezone):
         return _timedelta_to_seconds(date.dst() or date.utcoffset())
     elif use_system_timezone:
         t = time.mktime(date.timetuple())
-        if time.localtime(t).tm_isdst: # pragma: no cover
+        if time.localtime(t).tm_isdst:  # pragma: no cover
             return -time.altzone
         else:
             return -time.timezone
     else:
         return 0
 
+
 def _utc_string(d):
     return d.strftime('%Y-%m-%dT%H:%M:%SZ')
+
 
 def rfc3339(date, utc=False, use_system_timezone=True):
     '''
@@ -182,8 +186,7 @@ class LocalTimeTestCase(unittest.TestCase):
         fixed = Fixed()
 
         d = datetime.datetime.now().replace(tzinfo=fixed_no_dst)
-        timezone = _timezone(_timedelta_to_seconds(fixed_no_dst.\
-                                                   utcoffset(None)))
+        timezone = _timezone(_timedelta_to_seconds(fixed_no_dst.utcoffset(None)))
         self.assertEqual(rfc3339(d),
                          d.strftime('%Y-%m-%dT%H:%M:%S') + timezone)
 
@@ -216,8 +219,8 @@ class LocalTimeTestCase(unittest.TestCase):
     def test_timestamp(self):
         d = time.time()
         self.assertEqual(rfc3339(d),
-                         datetime.datetime.fromtimestamp(d).\
-                         strftime('%Y-%m-%dT%H:%M:%S') + self.local_timezone)
+                         datetime.datetime.fromtimestamp(d).strftime('%Y-%m-%dT%H:%M:%S') +
+                         self.local_timezone)
 
     def test_timestamp_utc(self):
         d = time.time()
@@ -255,7 +258,7 @@ class LocalTimeTestCase(unittest.TestCase):
                              '2010-11-07T01:00:00-07:00')
 
 
-if __name__ == '__main__': # pragma: no cover
+if __name__ == '__main__':  # pragma: no cover
     import doctest
     doctest.testmod()
     unittest.main()
