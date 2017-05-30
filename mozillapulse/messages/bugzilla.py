@@ -2,8 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from base import *
-from mozillapulse.utils import email_to_routing_key
+from .base import GenericMessage, MalformedMessage
+from ..utils import email_to_routing_key
+
 
 # ------------------------------------------------------------------------------
 # Simple bug notification from Bugzilla's PushNotify extension
@@ -21,6 +22,7 @@ class SimpleBugMessage(GenericMessage):
         self.routing_parts = [str(bug_id)]
         self.set_data('id', bug_id)
         self.set_data('delta_ts', delta_ts)
+
 
 # ------------------------------------------------------------------------------
 # Generic base class for messages that have to do with bugs
@@ -41,6 +43,7 @@ class GenericBugMessage(GenericMessage):
     def set_bugdata(self, bugdata):
         self.set_data('bug', bugdata)
 
+
 # ------------------------------------------------------------------------------
 # High-level bug state messages (for end-user convenience)
 # ------------------------------------------------------------------------------
@@ -51,15 +54,18 @@ class BugStateMessage(GenericBugMessage):
         super(BugStateMessage, self).__init__()
         self.routing_parts.append(what)
 
+
 class BugCreatedMessage(BugStateMessage):
 
     def __init__(self):
         super(BugCreatedMessage, self).__init__('new')
 
+
 class BugClosedMessage(BugStateMessage):
 
     def __init__(self):
         super(BugClosedMessage, self).__init__('closed')
+
 
 class BugReopenedMessage(BugStateMessage):
 
@@ -73,6 +79,7 @@ class BugUndupedMessage(BugStateMessage):
     def __init__(self):
         super(BugUndupedMessage, self).__init__('unduped')
 
+
 class BugDupedMessage(BugStateMessage):
 
     def __init__(self):
@@ -83,6 +90,7 @@ class BugDupedMessage(BugStateMessage):
         tmp.append('dupe')
         tmp.append('original')
         return tmp
+
 
 # ------------------------------------------------------------------------------
 # Messages about changing bug values
@@ -101,6 +109,7 @@ class BugAddedMessage(GenericBugMessage):
         tmp.append('value')
         return tmp
 
+
 class BugRemovedMessage(GenericBugMessage):
 
     def __init__(self, what):
@@ -114,8 +123,9 @@ class BugRemovedMessage(GenericBugMessage):
         tmp.append('value')
         return tmp
 
+
 class BugChangedMessage(GenericBugMessage):
-    
+
     def __init__(self, what):
         super(BugChangedMessage, self).__init__()
         self.routing_parts.append('changed')
@@ -137,6 +147,7 @@ class BugChangedMessage(GenericBugMessage):
         if self.data['before'] == self.data['after']:
             raise MalformedMessage('before and after fields cannot be the same')
 
+
 # ------------------------------------------------------------------------------
 # Messages about requests
 # ------------------------------------------------------------------------------
@@ -149,20 +160,24 @@ class BugRequestMessage(BugChangedMessage):
         if who:
             self.routing_parts.append(email_to_routing_key(who))
 
+
 class BugRequestAddedMessage(BugRequestMessage):
 
     def __init__(self, what, who=None):
         super(BugRequestAddedMessage, self).__init__(what, 'requested', who)
+
 
 class BugRequestGrantedMessage(BugRequestMessage):
 
     def __init__(self, what, who=None):
         super(BugRequestGrantedMessage, self).__init__(what, 'granted', who)
 
+
 class BugRequestDeniedMessage(BugRequestMessage):
 
     def __init__(self, what, who=None):
         super(BugRequestDeniedMessage, self).__init__(what, 'denied', who)
+
 
 class BugRequestCanceledMessage(BugRequestMessage):
 

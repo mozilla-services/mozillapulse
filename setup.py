@@ -4,12 +4,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
 from setuptools import setup
+
 
 setup(name='MozillaPulse',
       version='1.2.2',
-      description='Helper library for interacting with the Mozilla Pulse ' +
+      description='Helper library for interacting with the Mozilla Pulse '
                   'message system at pulse.mozilla.org',
       url='https://hg.mozilla.org/automation/mozillapulse/',
       author='Mark Cote',
@@ -17,5 +17,4 @@ setup(name='MozillaPulse',
       license='MPL 2.0',
       packages=['mozillapulse', 'mozillapulse.messages'],
       install_requires=['kombu', 'pytz'],
-      test_suite='test.unittests',
-)
+      test_suite='test.unittests')

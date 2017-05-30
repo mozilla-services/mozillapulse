@@ -1,7 +1,10 @@
 # Any copyright is dedicated to the Public Domain.
 # http://creativecommons.org/publicdomain/zero/1.0/
 
-import Queue
+try:
+    import queue
+except ImportError:
+    import Queue as queue
 import multiprocessing
 import sys
 import time
@@ -40,9 +43,11 @@ class ConsumerSubprocess(multiprocessing.Process):
 
     def run(self):
         queue = self.queue
+
         def cb(body, message):
             queue.put(body)
             message.ack()
+
         consumer = self.consumer_class(durable=self.durable, **self.config)
         consumer.configure(topic=['#'] * len(consumer.exchange), callback=cb)
         consumer.listen()
@@ -94,13 +99,10 @@ class PulseTestMixin(object):
     def _get_verify_msg(self, msg):
         try:
             received_data = self.proc.queue.get(timeout=5)
-        except Queue.Empty:
+        except queue.Empty:
             self.fail('did not receive message from consumer process')
         self.assertEqual(msg.routing_key, received_data['_meta']['routing_key'])
-        received_payload = {}
-        for k, v in received_data['payload'].iteritems():
-            received_payload[k.encode('ascii')] = v.encode('ascii')
-        self.assertEqual(msg.data, received_payload)
+        self.assertEqual(msg.data, received_data['payload'])
 
     def test_nondurable(self):
         # Publish one message to ensure the exchange exists.  Since there is
@@ -318,11 +320,11 @@ class ModifiedConsumer(consumers.GenericConsumer):
 
     def _create_queue(self, exchange=None, routing_key=''):
         return consumers.Queue(name='queue/pulse/test',
-            exchange=exchange,
-            routing_key=routing_key,
-            durable=self.durable,
-            exclusive=False,
-            auto_delete=not self.durable)
+                               exchange=exchange,
+                               routing_key=routing_key,
+                               durable=self.durable,
+                               exclusive=False,
+                               auto_delete=not self.durable)
 
 
 class TestPermission(unittest.TestCase):

@@ -2,7 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from base import *
+from .base import GenericMessage
+
 
 # ------------------------------------------------------------------------------
 # Generic base class for messages that have to do with builds
@@ -19,6 +20,7 @@ class BuildMessage(GenericMessage):
 
         for key, value in event['payload'].items():
             self.set_data(key, value)
+
 
 # ------------------------------------------------------------------------------
 # Base class for messages that have to do with posting builds to ftp
@@ -44,6 +46,7 @@ class BuildPostedMessage(GenericMessage):
         tmp.append('package_type')
         return tmp
 
+
 # ------------------------------------------------------------------------------
 # Builds that are posted and meant to be downloaded and applied manually
 # ------------------------------------------------------------------------------
@@ -53,6 +56,7 @@ class ManualBuildPostedMessage(BuildPostedMessage):
         super(ManualBuildPostedMessage, self).__init__()
         self.routing_parts.append('manual')
 
+
 # ------------------------------------------------------------------------------
 # Builds that are posted and meant to be downloaded and applied as updates
 # ------------------------------------------------------------------------------
@@ -61,6 +65,7 @@ class UpdateBuildPostedMessage(BuildPostedMessage):
     def __init__(self):
         super(UpdateBuildPostedMessage, self).__init__()
         self.routing_parts.append('update')
+
 
 # ------------------------------------------------------------------------------
 # Partial updates that are posted to ftp
@@ -75,6 +80,7 @@ class PartialUpdateBuildPostedMessage(UpdateBuildPostedMessage):
         tmp = super(PartialUpdateBuildPostedMessage, self)._required_data_fields()
         tmp.append('for_build')
         return tmp
+
 
 # ------------------------------------------------------------------------------
 # Full updates that are posted to ftp
