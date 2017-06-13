@@ -1,0 +1,26 @@
+language: python
+python: 2.7
+cache: pip
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -y rabbitmq-server
+  - sudo rabbitmq-plugins enable rabbitmq_management
+  - sudo /etc/init.d/rabbitmq-server restart
+  - sudo rabbitmqctl add_user pulse pulse
+  - sudo rabbitmqctl set_permissions -p / pulse "^(queue/pulse/.*|exchange/pulse/.*)" "^(queue/pulse/.*|exchange/pulse/.*)" "^(queue/pulse/.*|exchange/.*)"
+  - sudo rabbitmqctl add_user code code
+  - sudo rabbitmqctl set_permissions -p / code "^(queue/code/.*|exchange/code/.*)" "^(queue/code/.*|exchange/code/.*)" "^(queue/code/.*|exchange/.*)"
+  - sudo rabbitmqctl add_user build build
+  - sudo rabbitmqctl set_permissions -p / build "^(queue/build/.*|exchange/build/.*)" "^(queue/build/.*|exchange/build/.*)" "^(queue/build/.*|exchange/.*)"
+  - sudo rabbitmqctl add_user taskcluster taskcluster
+  - sudo rabbitmqctl set_permissions -p / taskcluster "^(queue/taskcluster/.*|exchange/taskcluster.*)" "^(queue/taskcluster/.*|exchange/taskcluster.*)" "^(queue/taskcluster/.*|exchange/.*)"
+install:
+  - pip install -e .
+  - pip install flake8
+script:
+  - flake8 flake8 mozillapulse test
+  - python test/runtests.py --host localhost
+matrix:
+  include:
+    - python: 3.5
+    - python: 3.6
