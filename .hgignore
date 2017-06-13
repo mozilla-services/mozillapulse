@@ -1,7 +1,0 @@
-syntax: glob
-
-*.elc
-*.pyc
-*~
-MozillaPulse.egg-info
-test/.vagrant
