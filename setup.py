@@ -11,7 +11,7 @@ setup(name='MozillaPulse',
       version='1.3',
       description='Helper library for interacting with the Mozilla Pulse '
                   'message system at pulse.mozilla.org',
-      url='https://hg.mozilla.org/automation/mozillapulse/',
+      url='https://github.com/mozilla-services/mozillapulse',
       author='Mark Cote',
       author_email='mcote@mozilla.com',
       license='MPL 2.0',
